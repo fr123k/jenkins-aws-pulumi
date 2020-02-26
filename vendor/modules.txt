@@ -58,7 +58,7 @@ github.com/opentracing/opentracing-go/log
 github.com/pelletier/go-buffruneio
 # github.com/pkg/errors v0.8.1
 github.com/pkg/errors
-# github.com/pulumi/pulumi v1.10.1
+# github.com/pulumi/pulumi v1.11.1
 github.com/pulumi/pulumi/pkg/apitype
 github.com/pulumi/pulumi/pkg/diag
 github.com/pulumi/pulumi/pkg/diag/colors
@@ -84,7 +84,9 @@ github.com/pulumi/pulumi/pkg/version
 github.com/pulumi/pulumi/pkg/workspace
 github.com/pulumi/pulumi/sdk/go/pulumi
 github.com/pulumi/pulumi/sdk/proto/go
-# github.com/pulumi/pulumi-aws v1.21.0
+# github.com/pulumi/pulumi-aws v1.23.0
+github.com/pulumi/pulumi-aws/sdk/go/aws
+github.com/pulumi/pulumi-aws/sdk/go/aws/ec2
 github.com/pulumi/pulumi-aws/sdk/go/aws/iam
 github.com/pulumi/pulumi-aws/sdk/go/aws/s3
 # github.com/sergi/go-diff v1.0.0
