@@ -42,10 +42,11 @@ func createJenkinsVM(ctx *pulumi.Context) error {
 	ami, err := aws.GetAmi(ctx, &aws.GetAmiArgs{
 		Filters: []aws.GetAmiFilter{
 			{
-				Name:   "name",
-				Values: []string{"	ami-078603b469de54ad7"},
+        Name:   "name",
+        Values: []string{"ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20200129"},
 			},
-		},
+    },
+    Owners: []string{"099720109477"},
 		MostRecent: &mostRecent,
 	})
 	if err != nil {
@@ -56,9 +57,49 @@ func createJenkinsVM(ctx *pulumi.Context) error {
 		InstanceType: pulumi.String(size),
 		SecurityGroups: pulumi.StringArray{
 			group.Name,
-		},
+    },
+    KeyName: pulumi.String("test"), //create the keypair with pulumi
 		Ami: pulumi.String(ami.Id),
 		UserData: pulumi.String(`#cloud-config
+package_update: true
+package_upgrade: true
+package_reboot_if_required: true
+
+manage-resolv-conf: true
+resolv_conf:
+	nameservers:
+	- '8.8.8.8'
+  - '8.8.4.4'
+
+packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg-agent
+  - software-properties-common
+
+runcmd:
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+  - add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  - apt-get update -y
+  - apt-get install -y docker-ce docker-ce-cli containerd.io
+  - systemctl start docker
+  - systemctl enable docker
+
+- name: "docker-jocker.service"
+  command: "start"
+  content: |
+    [Unit]
+    Description=Run an jocker container
+    Author=Frank Ittermann
+    Requires=docker.service
+    After=docker.service
+
+    [Service]
+    Restart=always
+    ExecStartPre=-/usr/bin/docker rm jocker
+    ExecStart=/usr/bin/docker run --rm --name jocker fr123k/jocker
+    ExecStop=/usr/bin/docker stop -t 2 jocker
 `),
 	})
 
