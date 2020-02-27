@@ -1,6 +1,8 @@
 package main
 
 import (
+	"io/ioutil"
+
 	"github.com/pulumi/pulumi-aws/sdk/go/aws"
 	"github.com/pulumi/pulumi-aws/sdk/go/aws/ec2"
 	"github.com/pulumi/pulumi-aws/sdk/go/aws/iam"
@@ -22,6 +24,15 @@ func main() {
 	})
 }
 
+func getCloudInitYaml(fileName string) (*string, error) {
+	b, err := ioutil.ReadFile(fileName) // just pass the file name
+	if err != nil {
+		return nil, err
+	}
+	yaml := string(b)
+	return &yaml, nil
+}
+
 func createJenkinsVM(ctx *pulumi.Context) error {
 	group, err := ec2.NewSecurityGroup(ctx, "web-secgrp-2", &ec2.SecurityGroupArgs{
 		Description: pulumi.String("Enable HTTP access"),
@@ -31,53 +42,53 @@ func createJenkinsVM(ctx *pulumi.Context) error {
 				FromPort:   pulumi.Int(80),
 				ToPort:     pulumi.Int(80),
 				CidrBlocks: pulumi.StringArray{pulumi.String("0.0.0.0/0")},
-      },
-      ec2.SecurityGroupIngressArgs{
+			},
+			ec2.SecurityGroupIngressArgs{
 				Protocol:   pulumi.String("tcp"),
 				FromPort:   pulumi.Int(22),
 				ToPort:     pulumi.Int(22),
 				CidrBlocks: pulumi.StringArray{pulumi.String("95.90.242.194/32")},
 			},
-    },
-    Egress: ec2.SecurityGroupEgressArray{
+		},
+		Egress: ec2.SecurityGroupEgressArray{
 			ec2.SecurityGroupEgressArgs{
-        Protocol:   pulumi.String("tcp"),
+				Protocol:   pulumi.String("tcp"),
 				FromPort:   pulumi.Int(80),
 				ToPort:     pulumi.Int(80),
 				CidrBlocks: pulumi.StringArray{pulumi.String("0.0.0.0/0")},
-      },
-      ec2.SecurityGroupEgressArgs{
+			},
+			ec2.SecurityGroupEgressArgs{
 				Protocol:   pulumi.String("tcp"),
 				FromPort:   pulumi.Int(443),
 				ToPort:     pulumi.Int(443),
 				CidrBlocks: pulumi.StringArray{pulumi.String("0.0.0.0/0")},
-      },
-      //github ssh
-      //140.82.118.3
-      ec2.SecurityGroupEgressArgs{
+			},
+			//github ssh
+			//140.82.118.3
+			ec2.SecurityGroupEgressArgs{
 				Protocol:   pulumi.String("tcp"),
 				FromPort:   pulumi.Int(22),
 				ToPort:     pulumi.Int(22),
 				CidrBlocks: pulumi.StringArray{pulumi.String("192.30.252.0/22")},
-      },
-      ec2.SecurityGroupEgressArgs{
+			},
+			ec2.SecurityGroupEgressArgs{
 				Protocol:   pulumi.String("tcp"),
 				FromPort:   pulumi.Int(22),
 				ToPort:     pulumi.Int(22),
 				CidrBlocks: pulumi.StringArray{pulumi.String("140.82.118.0/24")},
-      },
-      ec2.SecurityGroupEgressArgs{
+			},
+			ec2.SecurityGroupEgressArgs{
 				Protocol:   pulumi.String("tcp"),
 				FromPort:   pulumi.Int(22),
 				ToPort:     pulumi.Int(22),
 				CidrBlocks: pulumi.StringArray{pulumi.String("204.232.175.90/32")},
-      },
-      ec2.SecurityGroupEgressArgs{
+			},
+			ec2.SecurityGroupEgressArgs{
 				Protocol:   pulumi.String("tcp"),
 				FromPort:   pulumi.Int(22),
 				ToPort:     pulumi.Int(22),
 				CidrBlocks: pulumi.StringArray{pulumi.String("207.97.227.239/32")},
-      },
+			},
 		},
 	})
 	if err != nil {
@@ -88,13 +99,20 @@ func createJenkinsVM(ctx *pulumi.Context) error {
 	ami, err := aws.GetAmi(ctx, &aws.GetAmiArgs{
 		Filters: []aws.GetAmiFilter{
 			{
-        Name:   "name",
-        Values: []string{"ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20200129"},
+				Name:   "name",
+				Values: []string{"ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20200129"},
 			},
-    },
-    Owners: []string{"099720109477"},
+		},
+		Owners:     []string{"099720109477"},
 		MostRecent: &mostRecent,
 	})
+
+	if err != nil {
+		return err
+	}
+
+	yaml, err := getCloudInitYaml("cloud-init/cloud-init.yaml")
+
 	if err != nil {
 		return err
 	}
@@ -103,54 +121,10 @@ func createJenkinsVM(ctx *pulumi.Context) error {
 		InstanceType: pulumi.String(size),
 		SecurityGroups: pulumi.StringArray{
 			group.Name,
-    },
-    KeyName: pulumi.String("test"), //create the keypair with pulumi
-		Ami: pulumi.String(ami.Id),
-    UserData: pulumi.String(`#cloud-config
-package_update: true
-package_upgrade: true
-package_reboot_if_required: false
-
-manage-resolv-conf: true
-resolv_conf:
-  nameservers:
-  - '8.8.8.8'
-  - '8.8.4.4'
-
-packages:
-- apt-transport-https
-- ca-certificates
-- curl
-- gnupg-agent
-- software-properties-common
-
-write_files:
-- path: /etc/systemd/system/jocker.service
-  permissions: 0644
-  owner: root
-  content: |
-    [Unit]
-    Description=Run an jocker container
-    Author=Frank Ittermann
-    Requires=docker.service
-    After=docker.service
-
-    [Service]
-    Restart=always
-    ExecStartPre=-/usr/bin/docker rm jocker
-    ExecStart=/usr/bin/docker run --rm -p 80:8080 --name jocker fr123k/jocker
-    ExecStop=/usr/bin/docker stop -t 2 jocker
-
-runcmd:
-- curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-- add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-- apt-get update -y
-- apt-get install -y docker-ce docker-ce-cli containerd.io
-- systemctl start docker
-- systemctl enable docker
-- systemctl daemon-reload
-- systemctl start jocker.service
-`),
+		},
+		KeyName:  pulumi.String("test"), //create the keypair with pulumi
+		Ami:      pulumi.String(ami.Id),
+		UserData: pulumi.String(*yaml),
 	})
 
 	ctx.Export("publicIp", server.PublicIp)
@@ -160,8 +134,8 @@ runcmd:
 }
 
 func pulumiForAutomation(ctx *pulumi.Context) error {
-	const bucketName="s3-pulumi-state"
-	_, err := s3.NewAccountPublicAccessBlock(ctx, bucketName + "-acl", &s3.AccountPublicAccessBlockArgs{
+	const bucketName = "s3-pulumi-state"
+	_, err := s3.NewAccountPublicAccessBlock(ctx, bucketName+"-acl", &s3.AccountPublicAccessBlockArgs{
 		BlockPublicAcls: pulumi.Bool(true),
 	})
 	if err != nil {
@@ -176,11 +150,11 @@ func pulumiForAutomation(ctx *pulumi.Context) error {
 	// Stack exports
 	ctx.Export("bucketName", stateBucket.ID())
 	ctx.Export("s3Urn", stateBucket.URN())
-	
+
 	// Create the bucket to store the pulumi state
-	const username="pulumi-automation"
-		
-	iamUser, err := iam.NewUser(ctx, username + "-user", &iam.UserArgs{
+	const username = "pulumi-automation"
+
+	iamUser, err := iam.NewUser(ctx, username+"-user", &iam.UserArgs{
 		Tags: pulumi.Map{"Creator": pulumi.String("jenkins-aws-pulumi")},
 	})
 
@@ -198,7 +172,7 @@ func pulumiForAutomation(ctx *pulumi.Context) error {
 			}
 		]
 	}`
-	
+
 	var ec2PolicyContent = `{
 		"Version": "2012-10-17",
 		"Statement": [
@@ -211,7 +185,7 @@ func pulumiForAutomation(ctx *pulumi.Context) error {
 	}
 	`
 
-	s3IamPolicy, err := iam.NewPolicy(ctx, username + "-user-policy-s3", &iam.PolicyArgs{
+	s3IamPolicy, err := iam.NewPolicy(ctx, username+"-user-policy-s3", &iam.PolicyArgs{
 		Policy: pulumi.String(s3PolicyContent),
 	})
 
@@ -219,7 +193,7 @@ func pulumiForAutomation(ctx *pulumi.Context) error {
 		return err
 	}
 
-	ec2IamPolicy, err := iam.NewPolicy(ctx, username + "-user-policy-ec2", &iam.PolicyArgs{
+	ec2IamPolicy, err := iam.NewPolicy(ctx, username+"-user-policy-ec2", &iam.PolicyArgs{
 		Policy: pulumi.String(ec2PolicyContent),
 	})
 
@@ -227,17 +201,17 @@ func pulumiForAutomation(ctx *pulumi.Context) error {
 		return err
 	}
 
-	iam.NewUserPolicyAttachment(ctx, username + "-user-policy-attachment-s3", &iam.UserPolicyAttachmentArgs{
-		User: iamUser.ID(),
+	iam.NewUserPolicyAttachment(ctx, username+"-user-policy-attachment-s3", &iam.UserPolicyAttachmentArgs{
+		User:      iamUser.ID(),
 		PolicyArn: s3IamPolicy.ID(),
 	})
 
-	iam.NewUserPolicyAttachment(ctx, username + "-user-policy-attachment-ec2", &iam.UserPolicyAttachmentArgs{
-		User: iamUser.ID(),
+	iam.NewUserPolicyAttachment(ctx, username+"-user-policy-attachment-ec2", &iam.UserPolicyAttachmentArgs{
+		User:      iamUser.ID(),
 		PolicyArn: ec2IamPolicy.ID(),
 	})
 
-	iamKeys, err := iam.NewAccessKey(ctx, username + "-user-keys", &iam.AccessKeyArgs{
+	iamKeys, err := iam.NewAccessKey(ctx, username+"-user-keys", &iam.AccessKeyArgs{
 		User: iamUser.ID(),
 	})
 
