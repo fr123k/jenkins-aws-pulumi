@@ -31,7 +31,53 @@ func createJenkinsVM(ctx *pulumi.Context) error {
 				FromPort:   pulumi.Int(80),
 				ToPort:     pulumi.Int(80),
 				CidrBlocks: pulumi.StringArray{pulumi.String("0.0.0.0/0")},
+      },
+      ec2.SecurityGroupIngressArgs{
+				Protocol:   pulumi.String("tcp"),
+				FromPort:   pulumi.Int(22),
+				ToPort:     pulumi.Int(22),
+				CidrBlocks: pulumi.StringArray{pulumi.String("95.90.242.194/32")},
 			},
+    },
+    Egress: ec2.SecurityGroupEgressArray{
+			ec2.SecurityGroupEgressArgs{
+        Protocol:   pulumi.String("tcp"),
+				FromPort:   pulumi.Int(80),
+				ToPort:     pulumi.Int(80),
+				CidrBlocks: pulumi.StringArray{pulumi.String("0.0.0.0/0")},
+      },
+      ec2.SecurityGroupEgressArgs{
+				Protocol:   pulumi.String("tcp"),
+				FromPort:   pulumi.Int(443),
+				ToPort:     pulumi.Int(443),
+				CidrBlocks: pulumi.StringArray{pulumi.String("0.0.0.0/0")},
+      },
+      //github ssh
+      //140.82.118.3
+      ec2.SecurityGroupEgressArgs{
+				Protocol:   pulumi.String("tcp"),
+				FromPort:   pulumi.Int(22),
+				ToPort:     pulumi.Int(22),
+				CidrBlocks: pulumi.StringArray{pulumi.String("192.30.252.0/22")},
+      },
+      ec2.SecurityGroupEgressArgs{
+				Protocol:   pulumi.String("tcp"),
+				FromPort:   pulumi.Int(22),
+				ToPort:     pulumi.Int(22),
+				CidrBlocks: pulumi.StringArray{pulumi.String("140.82.118.0/24")},
+      },
+      ec2.SecurityGroupEgressArgs{
+				Protocol:   pulumi.String("tcp"),
+				FromPort:   pulumi.Int(22),
+				ToPort:     pulumi.Int(22),
+				CidrBlocks: pulumi.StringArray{pulumi.String("204.232.175.90/32")},
+      },
+      ec2.SecurityGroupEgressArgs{
+				Protocol:   pulumi.String("tcp"),
+				FromPort:   pulumi.Int(22),
+				ToPort:     pulumi.Int(22),
+				CidrBlocks: pulumi.StringArray{pulumi.String("207.97.227.239/32")},
+      },
 		},
 	})
 	if err != nil {
@@ -60,34 +106,28 @@ func createJenkinsVM(ctx *pulumi.Context) error {
     },
     KeyName: pulumi.String("test"), //create the keypair with pulumi
 		Ami: pulumi.String(ami.Id),
-		UserData: pulumi.String(`#cloud-config
+    UserData: pulumi.String(`#cloud-config
 package_update: true
 package_upgrade: true
-package_reboot_if_required: true
+package_reboot_if_required: false
 
 manage-resolv-conf: true
 resolv_conf:
-	nameservers:
-	- '8.8.8.8'
+  nameservers:
+  - '8.8.8.8'
   - '8.8.4.4'
 
 packages:
-  - apt-transport-https
-  - ca-certificates
-  - curl
-  - gnupg-agent
-  - software-properties-common
+- apt-transport-https
+- ca-certificates
+- curl
+- gnupg-agent
+- software-properties-common
 
-runcmd:
-  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-  - add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-  - apt-get update -y
-  - apt-get install -y docker-ce docker-ce-cli containerd.io
-  - systemctl start docker
-  - systemctl enable docker
-
-- name: "docker-jocker.service"
-  command: "start"
+write_files:
+- path: /etc/systemd/system/jocker.service
+  permissions: 0644
+  owner: root
   content: |
     [Unit]
     Description=Run an jocker container
@@ -98,8 +138,18 @@ runcmd:
     [Service]
     Restart=always
     ExecStartPre=-/usr/bin/docker rm jocker
-    ExecStart=/usr/bin/docker run --rm --name jocker fr123k/jocker
+    ExecStart=/usr/bin/docker run --rm -p 80:8080 --name jocker fr123k/jocker
     ExecStop=/usr/bin/docker stop -t 2 jocker
+
+runcmd:
+- curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+- add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+- apt-get update -y
+- apt-get install -y docker-ce docker-ce-cli containerd.io
+- systemctl start docker
+- systemctl enable docker
+- systemctl daemon-reload
+- systemctl start jocker.service
 `),
 	})
 
