@@ -22,6 +22,9 @@ write_files:
   permissions: 0644
   owner: root
   content: |
+    SEED_JOB_GIT_REPO=fr123k/jenkins-aws-pulumi
+    SEED_JOB_GROOVY_FILE=jenkins/pipeline-jobs.groovy
+    SEED_BRANCH_JOBS=fr/add_ec2_creation
     {{ ADMIN_PASSWORD }}
 
 - path: /etc/systemd/system/jocker.service

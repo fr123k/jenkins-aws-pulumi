@@ -40,13 +40,15 @@ func parseCloudInitYaml(content string) string {
 
 	if ok == true {
 		return strings.ReplaceAll(content, "{{ ADMIN_PASSWORD }}", "ADMIN_PASSWORD=" + adminPassword)
+	} else {
+		return strings.ReplaceAll(content, "{{ ADMIN_PASSWORD }}", "")
 	}
 
 	return content
 }
 
 func createJenkinsVM(ctx *pulumi.Context) error {
-	group, err := ec2.NewSecurityGroup(ctx, "web-secgrp-2", &ec2.SecurityGroupArgs{
+	group, err := ec2.NewSecurityGroup(ctx, "jenkins-security-group", &ec2.SecurityGroupArgs{
 		Description: pulumi.String("Enable HTTP access"),
 		Ingress: ec2.SecurityGroupIngressArray{
 			ec2.SecurityGroupIngressArgs{
@@ -132,7 +134,7 @@ func createJenkinsVM(ctx *pulumi.Context) error {
 		return err
 	}
 
-	server, err := ec2.NewInstance(ctx, "web-server-www", &ec2.InstanceArgs{
+	server, err := ec2.NewInstance(ctx, "jenkins-master", &ec2.InstanceArgs{
 		InstanceType: pulumi.String(size),
 		SecurityGroups: pulumi.StringArray{
 			group.Name,
