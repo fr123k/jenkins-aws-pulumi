@@ -2,6 +2,8 @@ package main
 
 import (
 	"io/ioutil"
+	"os"
+	"strings"
 
 	"github.com/pulumi/pulumi-aws/sdk/go/aws"
 	"github.com/pulumi/pulumi-aws/sdk/go/aws/ec2"
@@ -29,8 +31,18 @@ func getCloudInitYaml(fileName string) (*string, error) {
 	if err != nil {
 		return nil, err
 	}
-	yaml := string(b)
+	yaml := parseCloudInitYaml(string(b))
 	return &yaml, nil
+}
+
+func parseCloudInitYaml(content string) string {
+	adminPassword, ok := os.LookupEnv("ADMIN_PASSWORD")
+
+	if ok == true {
+		return strings.ReplaceAll(content, "{{ ADMIN_PASSWORD }}", "ADMIN_PASSWORD=" + adminPassword)
+	}
+
+	return content
 }
 
 func createJenkinsVM(ctx *pulumi.Context) error {
@@ -63,14 +75,15 @@ func createJenkinsVM(ctx *pulumi.Context) error {
 				ToPort:     pulumi.Int(443),
 				CidrBlocks: pulumi.StringArray{pulumi.String("0.0.0.0/0")},
 			},
-			//github ssh
-			//140.82.118.3
 			ec2.SecurityGroupEgressArgs{
 				Protocol:   pulumi.String("tcp"),
 				FromPort:   pulumi.Int(22),
 				ToPort:     pulumi.Int(22),
 				CidrBlocks: pulumi.StringArray{pulumi.String("192.30.252.0/22")},
 			},
+
+			//github ssh
+			//140.82.118.3
 			ec2.SecurityGroupEgressArgs{
 				Protocol:   pulumi.String("tcp"),
 				FromPort:   pulumi.Int(22),
@@ -112,6 +125,8 @@ func createJenkinsVM(ctx *pulumi.Context) error {
 	}
 
 	yaml, err := getCloudInitYaml("cloud-init/cloud-init.yaml")
+
+	ctx.Export("cloud-init", pulumi.String(*yaml))
 
 	if err != nil {
 		return err

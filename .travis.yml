@@ -1,16 +1,29 @@
 language: go
+
+sudo: required
+
+addons:
+  apt:
+    update: true
+
 go:
-- 1.12.x
+  - 1.12.x
+
 before_install:
-- curl -fsSL https://get.pulumi.com/ | sh
-- export PATH=$PATH:$HOME/.pulumi/bin
+  - curl -fsSL https://get.pulumi.com/ | sh
+  - export PATH=$PATH:$HOME/.pulumi/bin
+  - sudo apt-get -y install pwgen #used in Makefile to generate the random admin password 
+
 script:
-- make prepare-aws-pulumi
-- make deploy-aws-pulumi; export PULUMI_RESULT=$?
-- make cleanup-aws-pulumi
-- exit $PULUMI_RESULT
+  - export ADMIN_PASSWORD=$(pwgen -s 16 1)
+  - make prepare-aws-pulumi
+  - make deploy-aws-pulumi; export COMMAND_RESULT=$?
+  - make test; export COMMAND_RESULT=COMMAND_RESULT || $?
+  - make cleanup-aws-pulumi
+  - exit $COMMAND_RESULT
+
 env:
   global:
-  - GO111MODULE=off
-  - secure: M0LqO0cRzw9j3u/YEXFwHlXc3dDVSmi/5N7RRI8y20bMRW6Kdj1anjR18sWxXIvsYkEfWoKcmnMoTl2u3xTy8Chl5yZjLapPbi5w/pSPCJMsFZApxP2KogD6vc5wqysfh5oud0B+F8AJM060SOHhYXb4+7YJH4eDGOpuzjB3cReE+LPgbqhbgU7U26nbIXERq17Q33/fuAQVxqWRVzbIe9bBEu93aDsHVP92iNFRw5a9b2LFNWJwDenNmiyxgrQNSkUeNdlIB8ZDOLSppZYUUbVZpTZqAEQ5UoJvgeNTMrPpy2nAuB5GqRPSURmp6a4CVuSk3w+/wKMee/GmzjNLb2tEo0J2XOK3JunYV8s07bRcCfvA10+7g3EQyY7dy6esEXEyzFpV+rOjul9dLfe9myEAxDvh5fXB/7yK6pxt1d1XlzzV9nMlmn4DGTeQbM4sOpRJqMKCIhVLrsawkoCpgwWWG1rxHag8SP6j4YFpdlDUIgG72roh1Z7y209qGYhvUhdiynFxe3DhvEKFM0lcrGxZgdSTm5TAZuDFSH3n50MHWp1dotD3hJvgqWv/gFDyE8SiXYZKGXdANy/Xy+hATn4Xv4D7KWlDkfjgovtAQqZwrVg/Dto4VLKg4jv3eVf5RRSIoXtYQT5E5tt+jtulWZYUv5HLKoVAa856Wpxmdgk=
-  - secure: H6q59cKsL/EsRqspaVzUwosF8PG4a5Qc7Wr4AKYl17EdTgoQPkP528/PvQ2/6W0eH2dOShDJoaYl/U0R1QNjDjvCM0Le2iuA4WNq2c1CuVCAyPwyPBwOkXhmz8vhu+691MiXB5WN4MUpcYJb0MMhRqUt9XRh/gbY9kZTKXpd5Xf7M5jMPbfJgoTryOoWNexI5ex94Xlc2JMy8DYwXzPgFDRyfXeGQDAsX27RyVPXX2EevhtOW7lkdRtLUzEjxsuHvhNWIBx6G1SUdqDrDs4dqw0b+s2gdKhA52g7blMZX51RXRH4gLxjV2+UJNKmLNGQXnHn+dQ2ECTumFWJlk1hmfJXFpgxDu/o5l5wHZ5HOnNGAC6BhA+twucbPFgbGlOTK4bDdNxerVqr3NAXkCDrU9k21OXWQeT1dgo+xM+LYGKg4KUxob9UtcFpqoISazVvLf83uajuzD2MdijidZpr6AxhxLZmxBgwBc3MolMEngqv5sslJB9kgFsRHOy4neGTs2AxO6NoZjhup08hK3Kkhh2AYkf/5d6zSDBignbsDGXKNVDrRi5dTlcwjTSU515PbqkYk6ZJW7EchEwim0Nd3DVajKxR7d7n0L4oJ4sPZlOm90zh61Xmza/2mLYGEqhvVazBPC4Aw0HoUxUat+GwXJ6PW6MYV1hV5f707MgO7fU=
+    - GO111MODULE=off
+    - secure: M0LqO0cRzw9j3u/YEXFwHlXc3dDVSmi/5N7RRI8y20bMRW6Kdj1anjR18sWxXIvsYkEfWoKcmnMoTl2u3xTy8Chl5yZjLapPbi5w/pSPCJMsFZApxP2KogD6vc5wqysfh5oud0B+F8AJM060SOHhYXb4+7YJH4eDGOpuzjB3cReE+LPgbqhbgU7U26nbIXERq17Q33/fuAQVxqWRVzbIe9bBEu93aDsHVP92iNFRw5a9b2LFNWJwDenNmiyxgrQNSkUeNdlIB8ZDOLSppZYUUbVZpTZqAEQ5UoJvgeNTMrPpy2nAuB5GqRPSURmp6a4CVuSk3w+/wKMee/GmzjNLb2tEo0J2XOK3JunYV8s07bRcCfvA10+7g3EQyY7dy6esEXEyzFpV+rOjul9dLfe9myEAxDvh5fXB/7yK6pxt1d1XlzzV9nMlmn4DGTeQbM4sOpRJqMKCIhVLrsawkoCpgwWWG1rxHag8SP6j4YFpdlDUIgG72roh1Z7y209qGYhvUhdiynFxe3DhvEKFM0lcrGxZgdSTm5TAZuDFSH3n50MHWp1dotD3hJvgqWv/gFDyE8SiXYZKGXdANy/Xy+hATn4Xv4D7KWlDkfjgovtAQqZwrVg/Dto4VLKg4jv3eVf5RRSIoXtYQT5E5tt+jtulWZYUv5HLKoVAa856Wpxmdgk=
+    - secure: H6q59cKsL/EsRqspaVzUwosF8PG4a5Qc7Wr4AKYl17EdTgoQPkP528/PvQ2/6W0eH2dOShDJoaYl/U0R1QNjDjvCM0Le2iuA4WNq2c1CuVCAyPwyPBwOkXhmz8vhu+691MiXB5WN4MUpcYJb0MMhRqUt9XRh/gbY9kZTKXpd5Xf7M5jMPbfJgoTryOoWNexI5ex94Xlc2JMy8DYwXzPgFDRyfXeGQDAsX27RyVPXX2EevhtOW7lkdRtLUzEjxsuHvhNWIBx6G1SUdqDrDs4dqw0b+s2gdKhA52g7blMZX51RXRH4gLxjV2+UJNKmLNGQXnHn+dQ2ECTumFWJlk1hmfJXFpgxDu/o5l5wHZ5HOnNGAC6BhA+twucbPFgbGlOTK4bDdNxerVqr3NAXkCDrU9k21OXWQeT1dgo+xM+LYGKg4KUxob9UtcFpqoISazVvLf83uajuzD2MdijidZpr6AxhxLZmxBgwBc3MolMEngqv5sslJB9kgFsRHOy4neGTs2AxO6NoZjhup08hK3Kkhh2AYkf/5d6zSDBignbsDGXKNVDrRi5dTlcwjTSU515PbqkYk6ZJW7EchEwim0Nd3DVajKxR7d7n0L4oJ4sPZlOm90zh61Xmza/2mLYGEqhvVazBPC4Aw0HoUxUat+GwXJ6PW6MYV1hV5f707MgO7fU=

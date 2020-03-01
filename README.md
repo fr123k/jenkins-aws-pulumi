@@ -1,6 +1,16 @@
+[![Build Status](https://travis-ci.com/fr123k/jenkins-aws-pulumi.svg?branch=master)](https://travis-ci.com/fr123k/jenkins-aws-pulumi)
+
 # jenkins-aws-pulumi
 
 This repository is a tutorial how to setup pulumi golang with aws.
+
+## Introduction
+
+The goal of this repository is to have [pulumi](https://www.pulumi.com/) based
+example that provide the following functionality.
+
+* bootstrap an ec2 instance
+* configure cloud-init to start the [jocker](https://hub.docker.com/r/fr123k/jocker) docker container as systemd service
 
 ## Prerequisites
 ```bash
@@ -35,7 +45,6 @@ pulumi up
 ## Multiple aws profiles
 
 https://www.pulumi.com/docs/intro/cloud-providers/aws/setup/
-
 
 ## Todo
 

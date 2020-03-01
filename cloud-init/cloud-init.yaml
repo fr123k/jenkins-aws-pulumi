@@ -18,6 +18,12 @@ packages:
 - software-properties-common
 
 write_files:
+- path: /etc/systemd/system/jocker.service.env
+  permissions: 0644
+  owner: root
+  content: |
+    {{ ADMIN_PASSWORD }}
+
 - path: /etc/systemd/system/jocker.service
   permissions: 0644
   owner: root
@@ -31,7 +37,7 @@ write_files:
     [Service]
     Restart=always
     ExecStartPre=-/usr/bin/docker rm jocker
-    ExecStart=/usr/bin/docker run --rm -p 80:8080 --name jocker fr123k/jocker
+    ExecStart=/usr/bin/docker run --rm -p 80:8080 --env-file /etc/systemd/system/jocker.service.env --name jocker fr123k/jocker
     ExecStop=/usr/bin/docker stop -t 2 jocker
 
 runcmd:
