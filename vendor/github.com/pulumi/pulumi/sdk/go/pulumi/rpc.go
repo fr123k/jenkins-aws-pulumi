@@ -18,6 +18,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"golang.org/x/net/context"
 
@@ -71,6 +72,9 @@ func marshalInputs(props Input) (resource.PropertyMap, map[string][]URN, []URN, 
 
 	pv := reflect.ValueOf(props)
 	if pv.Kind() == reflect.Ptr {
+		if pv.IsNil() {
+			return pmap, pdeps, depURNs, nil
+		}
 		pv = pv.Elem()
 	}
 	pt := pv.Type()
@@ -263,7 +267,10 @@ func marshalInputAndDetermineSecret(v interface{},
 			if rv.IsNil() {
 				return resource.PropertyValue{}, deps, secret, nil
 			}
-			v, destType = rv.Elem().Interface(), destType.Elem()
+			if destType.Kind() == reflect.Ptr {
+				destType = destType.Elem()
+			}
+			v = rv.Elem().Interface()
 			continue
 		case reflect.String:
 			return resource.NewStringProperty(rv.String()), deps, secret, nil
@@ -523,6 +530,10 @@ func unmarshalOutput(v resource.PropertyValue, dest reflect.Value) (bool, error)
 		result := reflect.MakeMap(dest.Type())
 		secret := false
 		for k, e := range v.ObjectValue() {
+			// ignore properties internal to the pulumi engine
+			if strings.HasPrefix(string(k), "__") {
+				continue
+			}
 			elem := reflect.New(elemType).Elem()
 			esecret, err := unmarshalOutput(e, elem)
 			if err != nil {

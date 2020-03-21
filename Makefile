@@ -5,7 +5,7 @@ go-init:
 	go mod init main
 
 build:
-	go build
+	go build -o $(shell basename $(shell pwd))
 
 prepare-aws-pulumi: build
 	pulumi plugin install resource aws 0.18.3
@@ -18,6 +18,8 @@ prepare-aws-pulumi: build
 
 deploy-aws-pulumi:
 	pulumi up --yes
+	#verbose logging
+	#pulumi up --yes --verbose 9 --logtostderr
 
 cleanup-aws-pulumi:
 	pulumi destroy --yes
