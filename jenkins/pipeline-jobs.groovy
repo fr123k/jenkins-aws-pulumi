@@ -4,9 +4,12 @@ node('master') {
         checkout scm
     }
 
-    stage('Configuration') {
-        // add programmacticly needed script approvals
-        load('jenkins/config/groovy/scriptApproval.groovy')
+    stage('Agents') {
+        // run SetupWizard from fr123k/jenkins-shared-library
+        def setup = load('jenkins/config/groovy/setup.groovy')
+        setup()
+            //the pipeline script in the jobDSL/pulumi.groovy
+            .getScriptApproval().approveScript('6d2ccc5267db0f3b500aa96a1ec53264613a1209')
     }
 
     stage('Seed') {

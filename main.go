@@ -39,7 +39,7 @@ func parseCloudInitYaml(content string) string {
 	adminPassword, ok := os.LookupEnv("ADMIN_PASSWORD")
 
 	if ok == true {
-		return strings.ReplaceAll(content, "{{ ADMIN_PASSWORD }}", "ADMIN_PASSWORD=" + adminPassword)
+		return strings.ReplaceAll(content, "{{ ADMIN_PASSWORD }}", "ADMIN_PASSWORD="+adminPassword)
 	} else {
 		return strings.ReplaceAll(content, "{{ ADMIN_PASSWORD }}", "")
 	}
@@ -61,7 +61,7 @@ func createJenkinsVM(ctx *pulumi.Context) error {
 				Protocol:   pulumi.String("tcp"),
 				FromPort:   pulumi.Int(22),
 				ToPort:     pulumi.Int(22),
-				CidrBlocks: pulumi.StringArray{pulumi.String("95.90.242.194/32")},
+				CidrBlocks: pulumi.StringArray{pulumi.String("95.90.242.227/32")},
 			},
 		},
 		Egress: ec2.SecurityGroupEgressArray{
@@ -139,7 +139,7 @@ func createJenkinsVM(ctx *pulumi.Context) error {
 		SecurityGroups: pulumi.StringArray{
 			group.Name,
 		},
-		KeyName:  pulumi.String("test"), //create the keypair with pulumi
+		KeyName:  pulumi.String("development"), //create the keypair with pulumi
 		Ami:      pulumi.String(ami.Id),
 		UserData: pulumi.String(*yaml),
 	})
