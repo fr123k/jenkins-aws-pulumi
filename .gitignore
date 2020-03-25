@@ -1,1 +1,8 @@
 main
+output
+
+jenkins-ec2/jenkins-ec2
+jenkins-ec2/Pulumi.jenkins-ec2.yaml
+
+pulumi-bucket/pulumi-bucket
+pulumi-bucket/Pulumi.pulumi-bucket.yaml

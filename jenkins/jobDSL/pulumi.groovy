@@ -1,20 +1,3 @@
-pipelineJob("Pulumi") {
-    logRotator {
-        numToKeep(50)
-    }
-
-    definition {
-        cps {
-            script("""
-node ("docker-1") {
-    sh("go version")
-    sh("pulumi version")
-}
-            """)
-        }
-    }
-}
-
 multibranchPipelineJob("Pulumi") {
     orphanedItemStrategy {
         discardOldItems {
@@ -27,6 +10,8 @@ multibranchPipelineJob("Pulumi") {
     branchSources {
         // Adds a GitHub branch source.
         github {
+            // Specifies a unique ID for this branch source.
+            id("jenkins-aws-pulumi-branch-id")
             // Sets checkout credentials for authentication with GitHub.
             checkoutCredentialsId("deploy-key-shared-library")
             // Sets the name of the GitHub Organization or GitHub User Account.

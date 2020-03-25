@@ -1,5 +1,0 @@
-name: aws-pulumi
-runtime: go
-description: 
-template:
-  config:

@@ -9,6 +9,8 @@ node ("docker-1") {
         sh("go version")
         sh("pulumi version")
         sh("pwgen")
-        sh("make local")
+        withCredentials([usernamePassword(credentialsId: 'aws-key-credentials', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
+            sh("make local")
+        }
     }
 }

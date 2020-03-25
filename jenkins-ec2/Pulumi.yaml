@@ -1,0 +1,5 @@
+name: jenkins-aws-pulumi
+runtime: go
+description: 
+template:
+  config:

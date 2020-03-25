@@ -17,11 +17,10 @@ before_install:
 
 script:
   - export ADMIN_PASSWORD=$(pwgen -s 16 1)
-  - make prepare-aws-pulumi
-  - make deploy-aws-pulumi test
+  - make deploy test
 
 after_script:
-  - make cleanup-aws-pulumi
+  - make cleanup
 
 env:
   global:
