@@ -32,7 +32,7 @@ local-cleanup-aws-pulumi:
 
 deploy: build prepare-aws-pulumi deploy-aws-pulumi cleanup-aws-pulumi
 
-local: local-cleanup-aws-pulumi build prepare-aws-pulumi deploy-aws-pulumi
+local: local-cleanup-aws-pulumi build prepare-aws-pulumi deploy-aws-pulumi cleanup-aws-pulumi
 
 shell:
 	pulumi stack output publicDns
