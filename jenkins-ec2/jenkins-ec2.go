@@ -11,7 +11,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/go/pulumi/config"
 )
 
-const size = "t2.micro"
+const size = "t2.medium"
 
 func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
@@ -40,8 +40,21 @@ func parseCloudInitYaml(content string, awsKeyID string, awsKeySecret string) st
 	} else {
 		result = strings.ReplaceAll(content, "{{ ADMIN_PASSWORD }}", "")
 	}
+	seedBranchJobs, ok2 := os.LookupEnv("SEED_BRANCH_JOBS")
+	if ok2 == true {
+		result = strings.ReplaceAll(result, "{{ SEED_BRANCH_JOBS }}", "SEED_BRANCH_JOBS="+seedBranchJobs)
+	} else {
+		result = strings.ReplaceAll(result, "{{ SEED_BRANCH_JOBS }}", "SEED_BRANCH_JOBS=origin/master")
+	}
+	seedJobGroovyFile, ok3 := os.LookupEnv("SEED_JOB_GROOVY_FILE")
+	if ok3 == true {
+		result = strings.ReplaceAll(result, "{{ SEED_JOB_GROOVY_FILE }}", "SEED_JOB_GROOVY_FILE="+seedJobGroovyFile)
+	} else {
+		result = strings.ReplaceAll(result, "{{ SEED_JOB_GROOVY_FILE }}", "SEED_JOB_GROOVY_FILE=jenkins/pipeline-job.groovy")
+	}
 	result = strings.ReplaceAll(result, "{{ AWS_KEY_ID }}", "AWS_KEY_ID="+awsKeyID)
 	result = strings.ReplaceAll(result, "{{ AWS_KEY_SECRET }}", "AWS_KEY_SECRET="+awsKeySecret)
+
 	return result
 }
 
@@ -59,7 +72,7 @@ func createJenkinsVM(ctx *pulumi.Context, awsKeyID string, awsKeySecret string) 
 				Protocol:   pulumi.String("tcp"),
 				FromPort:   pulumi.Int(22),
 				ToPort:     pulumi.Int(22),
-				CidrBlocks: pulumi.StringArray{pulumi.String("95.90.242.227/32")},
+				CidrBlocks: pulumi.StringArray{pulumi.String("95.90.244.46/32")},
 			},
 		},
 		Egress: ec2.SecurityGroupEgressArray{
@@ -133,6 +146,7 @@ func createJenkinsVM(ctx *pulumi.Context, awsKeyID string, awsKeySecret string) 
 	}
 
 	server, err := ec2.NewInstance(ctx, "jenkins-master", &ec2.InstanceArgs{
+		Tags:         pulumi.Map{"Name": pulumi.String("jenkins-master")},
 		InstanceType: pulumi.String(size),
 		SecurityGroups: pulumi.StringArray{
 			group.Name,

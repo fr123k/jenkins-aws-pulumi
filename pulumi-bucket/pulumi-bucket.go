@@ -32,7 +32,7 @@ func pulumiForAutomation(ctx *pulumi.Context) error {
 	// Stack exports
 	ctx.Export("bucketName", stateBucket.ID())
 	ctx.Export("s3Urn", stateBucket.URN())
-	ctx.Export("s3Urn", stateBucket.BucketDomainName)
+	ctx.Export("s3Domain", stateBucket.BucketDomainName)
 
 	// Create the bucket to store the pulumi state
 	const username = "pulumi-automation"
@@ -68,6 +68,18 @@ func pulumiForAutomation(ctx *pulumi.Context) error {
 	}
 	`
 
+	var iamPolicyContent = `{
+		"Version": "2012-10-17",
+		"Statement": [
+			{
+				"Action": "iam:*",
+				"Effect": "Allow",
+				"Resource": "*"
+			}
+		]
+	}
+	`
+
 	s3IamPolicy, err := iam.NewPolicy(ctx, username+"-user-policy-s3", &iam.PolicyArgs{
 		Policy: pulumi.String(s3PolicyContent),
 	})
@@ -84,6 +96,14 @@ func pulumiForAutomation(ctx *pulumi.Context) error {
 		return err
 	}
 
+	iamIamPolicy, err := iam.NewPolicy(ctx, username+"-user-policy-iam", &iam.PolicyArgs{
+		Policy: pulumi.String(iamPolicyContent),
+	})
+
+	if err != nil {
+		return err
+	}
+
 	iam.NewUserPolicyAttachment(ctx, username+"-user-policy-attachment-s3", &iam.UserPolicyAttachmentArgs{
 		User:      iamUser.ID(),
 		PolicyArn: s3IamPolicy.ID(),
@@ -92,6 +112,11 @@ func pulumiForAutomation(ctx *pulumi.Context) error {
 	iam.NewUserPolicyAttachment(ctx, username+"-user-policy-attachment-ec2", &iam.UserPolicyAttachmentArgs{
 		User:      iamUser.ID(),
 		PolicyArn: ec2IamPolicy.ID(),
+	})
+
+	iam.NewUserPolicyAttachment(ctx, username+"-user-policy-attachment-iam", &iam.UserPolicyAttachmentArgs{
+		User:      iamUser.ID(),
+		PolicyArn: iamIamPolicy.ID(),
 	})
 
 	iamKeys, err := iam.NewAccessKey(ctx, username+"-user-keys", &iam.AccessKeyArgs{

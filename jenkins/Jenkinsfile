@@ -10,7 +10,14 @@ node ("docker-1") {
         sh("pulumi version")
         sh("pwgen")
         withCredentials([usernamePassword(credentialsId: 'aws-key-credentials', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
-            sh("make local")
+            try {
+                sh("printenv | sort")
+                sh("make local")
+            } catch(err) {
+                currentBuild.result = 'UNSTABLE'
+                // sh("make cleanup")
+                throw(err)
+            }
         }
     }
 }
