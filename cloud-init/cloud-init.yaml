@@ -24,7 +24,7 @@ write_files:
   content: |
     SEED_JOB_GIT_REPO=fr123k/jenkins-aws-pulumi
     SEED_JOB_GROOVY_FILE=jenkins/pipeline-jobs.groovy
-    SEED_BRANCH_JOBS=fr/add_jocker_agent
+    SEED_BRANCH_JOBS=origin/master
     {{ ADMIN_PASSWORD }}
 
 - path: /etc/systemd/system/jocker.service
@@ -72,7 +72,7 @@ write_files:
     EnvironmentFile=-/etc/systemd/system/jocker-agent.service.secret.env
     ExecStartPre=-/usr/bin/docker rm agent
     ExecStartPre=-/etc/systemd/system/jocker-agent-pre.sh ${ADMIN_PASSWORD}
-    ExecStart=-/usr/bin/docker run --env-file /etc/systemd/system/jocker-agent.service.env --name agent fr123k/jocker-agents-golang -url http://172.17.0.1:80 ${AGENT_SECRET} docker-1
+    ExecStart=-/usr/bin/docker run --name agent fr123k/jocker-agents-pulumi -url http://172.17.0.1:80 ${AGENT_SECRET} docker-1
     ExecStop=/usr/bin/docker stop -t 2 agent
 
 runcmd:

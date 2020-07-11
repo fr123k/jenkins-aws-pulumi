@@ -40,11 +40,8 @@ func parseCloudInitYaml(content string) string {
 
 	if ok == true {
 		return strings.ReplaceAll(content, "{{ ADMIN_PASSWORD }}", "ADMIN_PASSWORD="+adminPassword)
-	} else {
-		return strings.ReplaceAll(content, "{{ ADMIN_PASSWORD }}", "")
 	}
-
-	return content
+	return strings.ReplaceAll(content, "{{ ADMIN_PASSWORD }}", "")
 }
 
 func createJenkinsVM(ctx *pulumi.Context) error {
@@ -61,7 +58,7 @@ func createJenkinsVM(ctx *pulumi.Context) error {
 				Protocol:   pulumi.String("tcp"),
 				FromPort:   pulumi.Int(22),
 				ToPort:     pulumi.Int(22),
-				CidrBlocks: pulumi.StringArray{pulumi.String("95.90.242.227/32")},
+				CidrBlocks: pulumi.StringArray{pulumi.String("95.90.244.46/32")},
 			},
 		},
 		Egress: ec2.SecurityGroupEgressArray{
