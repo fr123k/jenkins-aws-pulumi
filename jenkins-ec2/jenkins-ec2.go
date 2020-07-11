@@ -46,12 +46,6 @@ func parseCloudInitYaml(content string, awsKeyID string, awsKeySecret string) st
 	} else {
 		result = strings.ReplaceAll(result, "{{ SEED_BRANCH_JOBS }}", "SEED_BRANCH_JOBS=origin/master")
 	}
-	seedJobGroovyFile, ok3 := os.LookupEnv("SEED_JOB_GROOVY_FILE")
-	if ok3 == true {
-		result = strings.ReplaceAll(result, "{{ SEED_JOB_GROOVY_FILE }}", "SEED_JOB_GROOVY_FILE="+seedJobGroovyFile)
-	} else {
-		result = strings.ReplaceAll(result, "{{ SEED_JOB_GROOVY_FILE }}", "SEED_JOB_GROOVY_FILE=jenkins/pipeline-job.groovy")
-	}
 	result = strings.ReplaceAll(result, "{{ AWS_KEY_ID }}", "AWS_KEY_ID="+awsKeyID)
 	result = strings.ReplaceAll(result, "{{ AWS_KEY_SECRET }}", "AWS_KEY_SECRET="+awsKeySecret)
 

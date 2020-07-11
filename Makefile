@@ -30,8 +30,9 @@ test: ## Wait 300 seconds (5 minutes) but check every 10 seconds if resource is 
 	@curl -s http://admin:$(ADMIN_PASSWORD)@$(shell cat ./output/jenkins-ec2.json | jq -r ."publicDns"):80/job/Jenkins/job/Jobs/lastBuild/consoleText
 	@curl -s http://admin:$(ADMIN_PASSWORD)@$(shell cat ./output/jenkins-ec2.json | jq -r ."publicDns"):80/job/Jenkins/job/Setup/lastBuild/consoleText
 	@curl -s http://admin:$(ADMIN_PASSWORD)@$(shell cat ./output/jenkins-ec2.json | jq -r ."publicDns"):80/job/Jenkins/job/Setup/lastBuild/api/json | jq -r .result | grep SUCCESS
-	sleep 300 # wait until jenkins pulumi job is finished
-	sleep 300 # wait until jenkins pulumi job is finished
+
+jenkins-aws:
+	./scripts/jenkins-cli.sh $(shell cat ./output/jenkins-ec2.json | jq -r ."publicDns") Pulumi/job/${SEED_BRANCH_JOBS_URL} $(ADMIN_PASSWORD) 90
 	@curl -s http://admin:$(ADMIN_PASSWORD)@$(shell cat ./output/jenkins-ec2.json | jq -r ."publicDns"):80/job/Pulumi/indexing/consoleText
 	@curl -s http://admin:$(ADMIN_PASSWORD)@$(shell cat ./output/jenkins-ec2.json | jq -r ."publicDns"):80/job/Pulumi/job/${SEED_BRANCH_JOBS_URL}/lastBuild/consoleText
 

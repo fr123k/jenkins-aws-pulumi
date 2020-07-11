@@ -23,7 +23,7 @@ write_files:
     owner: root
     content: |
       SEED_JOB_GIT_REPO=fr123k/jenkins-aws-pulumi
-      {{ SEED_JOB_GROOVY_FILE }}
+      SEED_JOB_GROOVY_FILE=jenkins/pipeline-configure.groovy
       {{ SEED_BRANCH_JOBS }}
       {{ AWS_KEY_ID }}
       {{ AWS_KEY_SECRET }}
