@@ -17,6 +17,12 @@ packages:
   - gnupg-agent
   - software-properties-common
 
+# Todo not enough disk space yet
+# swap:
+#   filename: /swap.img
+#   size: "auto" # or size in bytes
+#   maxsize: 8G
+
 write_files:
   - path: /etc/systemd/system/jocker.service.env
     permissions: 0644
@@ -25,8 +31,8 @@ write_files:
       SEED_JOB_GIT_REPO=fr123k/jocker
       SEED_JOB_GROOVY_FILE=shared-library/pipeline-jobs.groovy
       JENKINS_MASTER=http://172.17.0.1:80
-      JOBS_LIST=eyJqb2JzIjogW3sgInJlcG9zaXRvcnkiOiJodHRwczovL2dpdGh1Yi5jb20vZnIxMjNrL2plbmtpbnMtYXdzLXB1bHVtaSIsICJqb2JEU0xSZXZpc2lvbiI6ICJtYXN0ZXIiLCAiam9iRFNMUGF0aCI6ImplbmtpbnMvam9iRFNMIiwgInJlbW92ZWRKb2JBY3Rpb24iOiJJR05PUkUiIH1dfQ==
-      {{ SEED_BRANCH_JOBS }}
+      JOBS_LIST=eyJqb2JzIjogW3sgInJlcG9zaXRvcnkiOiJodHRwczovL2dpdGh1Yi5jb20vZnIxMjNrL2plbmtpbnMtYXdzLXB1bHVtaSIsICJqb2JEU0xSZXZpc2lvbiI6ICJmci9wdWx1bWlfYWdlbnRfb25fZGVtYW5kIiwgImpvYkRTTFBhdGgiOiJqZW5raW5zL2pvYkRTTCIsICJyZW1vdmVkSm9iQWN0aW9uIjoiSUdOT1JFIiB9XX0=
+      SEED_BRANCH_JOBS=origin/master
       {{ AWS_KEY_ID }}
       {{ AWS_KEY_SECRET }}
       {{ ADMIN_PASSWORD }}

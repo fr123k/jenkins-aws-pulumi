@@ -11,7 +11,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/go/pulumi/config"
 )
 
-const size = "t2.medium"
+const size = "t2.large"
 
 func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
