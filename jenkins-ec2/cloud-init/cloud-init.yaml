@@ -22,8 +22,10 @@ write_files:
     permissions: 0644
     owner: root
     content: |
-      SEED_JOB_GIT_REPO=fr123k/jenkins-aws-pulumi
-      SEED_JOB_GROOVY_FILE=jenkins/pipeline-configure.groovy
+      SEED_JOB_GIT_REPO=fr123k/jocker
+      SEED_JOB_GROOVY_FILE=shared-library/pipeline-jobs.groovy
+      JENKINS_MASTER=http://172.17.0.1:80
+      JOBS_LIST=eyJqb2JzIjogW3sgInJlcG9zaXRvcnkiOiJodHRwczovL2dpdGh1Yi5jb20vZnIxMjNrL2plbmtpbnMtYXdzLXB1bHVtaSIsICJqb2JEU0xSZXZpc2lvbiI6ICJtYXN0ZXIiLCAiam9iRFNMUGF0aCI6ImplbmtpbnMvam9iRFNMIiwgInJlbW92ZWRKb2JBY3Rpb24iOiJJR05PUkUiIH1dfQ==
       {{ SEED_BRANCH_JOBS }}
       {{ AWS_KEY_ID }}
       {{ AWS_KEY_SECRET }}
@@ -56,6 +58,9 @@ write_files:
       echo -n "AGENT_SECRET=" > /etc/systemd/system/jocker-agent.service.secret.env
       curl -L -s http://admin:${ADMIN_PASSWORD}@localhost:80/computer/docker-1/slave-agent.jnlp | sed "s/.*<application-desc main-class=\"hudson.remoting.jnlp.Main\"><argument>\([a-z0-9]*\).*/\1/" >> /etc/systemd/system/jocker-agent.service.secret.env
 
+      mkdir -p /home/agent
+      curl -o /home/agent/agent.jar http://admin:${ADMIN_PASSWORD}@localhost:80/jnlpJars/agent.jar
+
   - path: /etc/systemd/system/jocker-agent.service
     permissions: 0644
     owner: root
@@ -75,16 +80,14 @@ write_files:
 
       EnvironmentFile=/etc/systemd/system/jocker.service.env
       EnvironmentFile=-/etc/systemd/system/jocker-agent.service.secret.env
-      ExecStartPre=-/usr/bin/docker rm agent
       ExecStartPre=-/etc/systemd/system/jocker-agent-pre.sh ${ADMIN_PASSWORD}
-      ExecStart=-/usr/bin/docker run --memory 3g --env-file /etc/systemd/system/jocker.service.env --name agent fr123k/jocker-agents-pulumi -url http://172.17.0.1:80 ${AGENT_SECRET} docker-1
-      ExecStop=/usr/bin/docker stop -t 2 agent
+      ExecStart=-/usr/bin/java -jar /home/agent/agent.jar -jnlpUrl http://172.17.0.1:80/computer/docker-1/slave-agent.jnlp -noReconnect -secret ${AGENT_SECRET} -workDir "/home/agent/"
 
 runcmd:
   - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
   - add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   - apt-get update -y
-  - apt-get install -y docker-ce docker-ce-cli containerd.io
+  - apt-get install -y docker-ce docker-ce-cli containerd.io openjdk-8-jre-headless
   - systemctl start docker
   - systemctl enable docker
   - systemctl daemon-reload

@@ -1,4 +1,4 @@
-node ("docker-1") {
+node ("pulumi") {
     stage('Checkout') {
         cleanWs()
         checkout scm
