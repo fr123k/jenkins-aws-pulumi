@@ -44,7 +44,6 @@ write_files:
       Restart=always
       ExecStartPre=-/usr/bin/docker rm -f jocker
       ExecStart=-/usr/bin/docker run --rm --memory 2g -p 50000:50000 -p 80:8080 --env-file /etc/systemd/system/jocker.service.env --name jocker fr123k/jocker
-      ExecStartPost=/bin/sleep 240
       ExecStop=/usr/bin/docker stop -t 2 jocker
 
   - path: /etc/systemd/system/jocker-agent-pre.sh
@@ -65,10 +64,15 @@ write_files:
       Description=Run an jocker container
       Requires=jocker.service
       After=jocker.service
+      StartLimitInterval=30
+      StartLimitBurst=5
 
       [Service]
       Restart=always
-      TimeoutStartSec=360
+      TimeoutStartSec=0
+      Restart=always
+      RestartSec=30
+
       EnvironmentFile=/etc/systemd/system/jocker.service.env
       EnvironmentFile=-/etc/systemd/system/jocker-agent.service.secret.env
       ExecStartPre=-/usr/bin/docker rm agent
