@@ -8,7 +8,7 @@ jenkins:
         name: "docker-1"
         labelString: "docker"
         nodeName: "docker-1"
-        remoteFS: "/home/jenkins"
+        remoteFS: "docker-1"
         numExecutors: 2
         launcher:
           jnlp:
