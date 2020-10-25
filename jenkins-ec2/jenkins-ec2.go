@@ -101,6 +101,12 @@ func createJenkinsVM(ctx *pulumi.Context, awsKeyID string, awsKeySecret string) 
 				Protocol:   pulumi.String("tcp"),
 				FromPort:   pulumi.Int(22),
 				ToPort:     pulumi.Int(22),
+				CidrBlocks: pulumi.StringArray{pulumi.String("140.82.121.4/32")},
+			},
+			ec2.SecurityGroupEgressArgs{
+				Protocol:   pulumi.String("tcp"),
+				FromPort:   pulumi.Int(22),
+				ToPort:     pulumi.Int(22),
 				CidrBlocks: pulumi.StringArray{pulumi.String("204.232.175.90/32")},
 			},
 			ec2.SecurityGroupEgressArgs{
