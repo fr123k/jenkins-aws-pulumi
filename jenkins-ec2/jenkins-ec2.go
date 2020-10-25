@@ -90,7 +90,13 @@ func createJenkinsVM(ctx *pulumi.Context, awsKeyID string, awsKeySecret string) 
 			},
 
 			//github ssh
-			//140.82.118.3
+			//TODO allow ssh to any host until can retrieve all ssh ip address of github.com
+			ec2.SecurityGroupEgressArgs{
+				Protocol:   pulumi.String("tcp"),
+				FromPort:   pulumi.Int(22),
+				ToPort:     pulumi.Int(22),
+				CidrBlocks: pulumi.StringArray{pulumi.String("0.0.0.0/0")},
+			},
 			ec2.SecurityGroupEgressArgs{
 				Protocol:   pulumi.String("tcp"),
 				FromPort:   pulumi.Int(22),

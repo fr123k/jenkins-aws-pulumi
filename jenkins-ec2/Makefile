@@ -10,6 +10,7 @@ prepare: build
 	pulumi plugin install resource aws 0.18.3
 	pulumi plugin ls
 	pulumi login --local
+	# pulumi login --cloud-url s3://$(shell cat ../output/pulumi-bucket.json | jq -r ."AccessKeys")
 	# pulumi stack rm -f ${STACK_NAME}
 	# pulumi stack select ${STACK_NAME}
 	pulumi stack init ${STACK_NAME}
