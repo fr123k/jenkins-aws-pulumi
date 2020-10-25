@@ -17,9 +17,11 @@ node ("pulumi") {
                 }
             } catch(err) {
                 currentBuild.result = 'UNSTABLE'
-                sh("make cleanup")
                 throw(err)
+            } final {
+                sh("make cleanup")
             }
+
         }
     }
 }
