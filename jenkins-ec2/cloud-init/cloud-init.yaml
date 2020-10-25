@@ -31,7 +31,7 @@ write_files:
       SEED_JOB_GIT_REPO=fr123k/jocker
       SEED_JOB_GROOVY_FILE=shared-library/pipeline-jobs.groovy
       JENKINS_MASTER=http://172.17.0.1:80
-      JOBS_LIST=eyJqb2JzIjogW3sgInJlcG9zaXRvcnkiOiJodHRwczovL2dpdGh1Yi5jb20vZnIxMjNrL2plbmtpbnMtYXdzLXB1bHVtaSIsICJqb2JEU0xSZXZpc2lvbiI6ICJmci9wdWx1bWlfYWdlbnRfb25fZGVtYW5kIiwgImpvYkRTTFBhdGgiOiJqZW5raW5zL2pvYkRTTCIsICJyZW1vdmVkSm9iQWN0aW9uIjoiSUdOT1JFIiB9XX0=
+      JOBS_LIST=e2pvYnM6IFt7IHJlcG9zaXRvcnk6aHR0cHM6Ly9naXRodWIuY29tL2ZyMTIzay9qZW5raW5zLWF3cy1wdWx1bWksIGpvYkRTTFJldmlzaW9uOiBtYXN0ZXIsIGpvYkRTTFBhdGg6amVua2lucy9qb2JEU0wsIHJlbW92ZWRKb2JBY3Rpb246SUdOT1JFIH1dfQo=
       SEED_BRANCH_JOBS=origin/master
       {{ AWS_KEY_ID }}
       {{ AWS_KEY_SECRET }}
