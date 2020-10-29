@@ -152,7 +152,10 @@ func createJenkinsVM(ctx *pulumi.Context, awsKeyID string, awsKeySecret string) 
 	}
 
 	server, err := ec2.NewInstance(ctx, "jenkins-master", &ec2.InstanceArgs{
-		Tags:         pulumi.StringMap{"Name": pulumi.String("jenkins-master")},
+		Tags:         pulumi.StringMap{
+			"Name": pulumi.String("jenkins-master"),
+			"JobUrl": pulumi.String(os.Getenv("TRAVIS_JOB_WEB_URL")),
+		},
 		InstanceType: pulumi.String(size),
 		SecurityGroups: pulumi.StringArray{
 			group.Name,
