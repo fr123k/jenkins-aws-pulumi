@@ -1,5 +1,5 @@
 // +build linux darwin freebsd netbsd openbsd solaris dragonfly
-// +build !appengine !js
+// +build !appengine
 
 package pb
 
@@ -8,109 +8,101 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"runtime"
 	"sync"
 	"syscall"
-
-	"golang.org/x/sys/unix"
+	"unsafe"
 )
+
+const (
+	TIOCGWINSZ     = 0x5413
+	TIOCGWINSZ_OSX = 1074295912
+)
+
+var tty *os.File
 
 var ErrPoolWasStarted = errors.New("Bar pool was started")
 
-var (
-	echoLockMutex    sync.Mutex
-	origTermStatePtr *unix.Termios
-	tty              *os.File
-	istty            bool
-)
+var echoLocked bool
+var echoLockMutex sync.Mutex
 
 func init() {
-	echoLockMutex.Lock()
-	defer echoLockMutex.Unlock()
-
 	var err error
 	tty, err = os.Open("/dev/tty")
-	istty = true
 	if err != nil {
 		tty = os.Stdin
-		istty = false
 	}
 }
 
 // terminalWidth returns width of the terminal.
 func terminalWidth() (int, error) {
-	if !istty {
-		return 0, errors.New("Not Supported")
+	w := new(window)
+	tio := syscall.TIOCGWINSZ
+	if runtime.GOOS == "darwin" {
+		tio = TIOCGWINSZ_OSX
 	}
-	echoLockMutex.Lock()
-	defer echoLockMutex.Unlock()
-
-	fd := int(tty.Fd())
-
-	ws, err := unix.IoctlGetWinsize(fd, unix.TIOCGWINSZ)
-	if err != nil {
+	res, _, err := syscall.Syscall(sysIoctl,
+		tty.Fd(),
+		uintptr(tio),
+		uintptr(unsafe.Pointer(w)),
+	)
+	if int(res) == -1 {
 		return 0, err
 	}
-
-	return int(ws.Col), nil
+	return int(w.Col), nil
 }
 
-func lockEcho() (shutdownCh chan struct{}, err error) {
+var oldState syscall.Termios
+
+func lockEcho() (quit chan int, err error) {
 	echoLockMutex.Lock()
 	defer echoLockMutex.Unlock()
-	if istty {
-		if origTermStatePtr != nil {
-			return shutdownCh, ErrPoolWasStarted
-		}
-
-		fd := int(tty.Fd())
-
-		origTermStatePtr, err = unix.IoctlGetTermios(fd, ioctlReadTermios)
-		if err != nil {
-			return nil, fmt.Errorf("Can't get terminal settings: %v", err)
-		}
-
-		oldTermios := *origTermStatePtr
-		newTermios := oldTermios
-		newTermios.Lflag &^= syscall.ECHO
-		newTermios.Lflag |= syscall.ICANON | syscall.ISIG
-		newTermios.Iflag |= syscall.ICRNL
-		if err := unix.IoctlSetTermios(fd, ioctlWriteTermios, &newTermios); err != nil {
-			return nil, fmt.Errorf("Can't set terminal settings: %v", err)
-		}
-
+	if echoLocked {
+		err = ErrPoolWasStarted
+		return
 	}
-	shutdownCh = make(chan struct{})
-	go catchTerminate(shutdownCh)
+	echoLocked = true
+
+	fd := tty.Fd()
+	if _, _, e := syscall.Syscall6(sysIoctl, fd, ioctlReadTermios, uintptr(unsafe.Pointer(&oldState)), 0, 0, 0); e != 0 {
+		err = fmt.Errorf("Can't get terminal settings: %v", e)
+		return
+	}
+
+	newState := oldState
+	newState.Lflag &^= syscall.ECHO
+	newState.Lflag |= syscall.ICANON | syscall.ISIG
+	newState.Iflag |= syscall.ICRNL
+	if _, _, e := syscall.Syscall6(sysIoctl, fd, ioctlWriteTermios, uintptr(unsafe.Pointer(&newState)), 0, 0, 0); e != 0 {
+		err = fmt.Errorf("Can't set terminal settings: %v", e)
+		return
+	}
+	quit = make(chan int, 1)
+	go catchTerminate(quit)
 	return
 }
 
-func unlockEcho() error {
+func unlockEcho() (err error) {
 	echoLockMutex.Lock()
 	defer echoLockMutex.Unlock()
-	if istty {
-		if origTermStatePtr == nil {
-			return nil
-		}
-
-		fd := int(tty.Fd())
-
-		if err := unix.IoctlSetTermios(fd, ioctlWriteTermios, origTermStatePtr); err != nil {
-			return fmt.Errorf("Can't set terminal settings: %v", err)
-		}
-
+	if !echoLocked {
+		return
 	}
-	origTermStatePtr = nil
-
-	return nil
+	echoLocked = false
+	fd := tty.Fd()
+	if _, _, e := syscall.Syscall6(sysIoctl, fd, ioctlWriteTermios, uintptr(unsafe.Pointer(&oldState)), 0, 0, 0); e != 0 {
+		err = fmt.Errorf("Can't set terminal settings")
+	}
+	return
 }
 
 // listen exit signals and restore terminal state
-func catchTerminate(shutdownCh chan struct{}) {
+func catchTerminate(quit chan int) {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGKILL)
 	defer signal.Stop(sig)
 	select {
-	case <-shutdownCh:
+	case <-quit:
 		unlockEcho()
 	case <-sig:
 		unlockEcho()
