@@ -54,6 +54,9 @@ write_files:
       ExecStart=-/usr/bin/docker run --rm --memory 2g -p 50000:50000 -p 80:8080 --env-file /etc/systemd/system/jocker.service.env --name jocker fr123k/jocker
       ExecStop=/usr/bin/docker stop -t 2 jocker
 
+      [Install]
+      WantedBy=multi-user.target
+
   - path: /etc/systemd/system/jocker-agent-pre.sh
     permissions: 0755
     owner: root
@@ -88,6 +91,9 @@ write_files:
       EnvironmentFile=-/etc/systemd/system/jocker-agent.service.secret.env
       ExecStartPre=-/etc/systemd/system/jocker-agent-pre.sh ${ADMIN_PASSWORD}
       ExecStart=-/usr/bin/java -jar /home/agent/agent.jar -jnlpUrl http://172.17.0.1:80/computer/docker-1/slave-agent.jnlp -noReconnect -secret ${AGENT_SECRET} -workDir "/home/agent/"
+
+      [Install]
+      WantedBy=multi-user.target
 
 runcmd:
   - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
