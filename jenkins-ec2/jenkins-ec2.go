@@ -5,10 +5,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/pulumi/pulumi-aws/sdk/go/aws"
-	"github.com/pulumi/pulumi-aws/sdk/go/aws/ec2"
-	"github.com/pulumi/pulumi/sdk/go/pulumi"
-	"github.com/pulumi/pulumi/sdk/go/pulumi/config"
+	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws"
+	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/ec2"
+	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v2/go/pulumi/config"
 )
 
 const size = "t2.large"
@@ -152,7 +152,7 @@ func createJenkinsVM(ctx *pulumi.Context, awsKeyID string, awsKeySecret string) 
 	}
 
 	server, err := ec2.NewInstance(ctx, "jenkins-master", &ec2.InstanceArgs{
-		Tags:         pulumi.Map{"Name": pulumi.String("jenkins-master")},
+		Tags:         pulumi.StringMap{"Name": pulumi.String("jenkins-master")},
 		InstanceType: pulumi.String(size),
 		SecurityGroups: pulumi.StringArray{
 			group.Name,

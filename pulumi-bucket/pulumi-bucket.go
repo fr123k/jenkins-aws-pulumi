@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/pulumi/pulumi-aws/sdk/go/aws/iam"
-	"github.com/pulumi/pulumi-aws/sdk/go/aws/s3"
-	"github.com/pulumi/pulumi/sdk/go/pulumi"
+	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/iam"
+	"github.com/pulumi/pulumi-aws/sdk/v3/go/aws/s3"
+	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 )
 
 const size = "t2.micro"
@@ -17,6 +17,7 @@ func main() {
 
 func pulumiForAutomation(ctx *pulumi.Context) error {
 	const bucketName = "s3-pulumi-state"
+
 	_, err := s3.NewAccountPublicAccessBlock(ctx, bucketName+"-acl", &s3.AccountPublicAccessBlockArgs{
 		BlockPublicAcls: pulumi.Bool(true),
 	})
@@ -38,7 +39,7 @@ func pulumiForAutomation(ctx *pulumi.Context) error {
 	const username = "pulumi-automation"
 
 	iamUser, err := iam.NewUser(ctx, username+"-user", &iam.UserArgs{
-		Tags: pulumi.Map{"Creator": pulumi.String("jenkins-aws-pulumi")},
+		Tags: pulumi.StringMap{"Creator": pulumi.String("jenkins-aws-pulumi")},
 	})
 
 	if err != nil {
