@@ -1,5 +1,5 @@
-export STACK_NAME ?= jenkins-ec2
-
+export STACK_NAME ?= jenkins-ec2${STACK_SUFFIX}
+export AWS_REGION ?= eu-west-1
 go-init:
 	go mod init main
 
@@ -9,8 +9,8 @@ build:
 prepare: build
 	pulumi plugin install resource aws 0.18.3
 	pulumi plugin ls
-	pulumi login --local
-	# pulumi login --cloud-url s3://$(shell cat ../output/pulumi-bucket.json | jq -r ."AccessKeys")
+	# pulumi login --local
+	pulumi login --cloud-url s3://s3-pulumi-state-d12f2f1
 	# pulumi stack rm -f ${STACK_NAME}
 	# pulumi stack select ${STACK_NAME}
 	pulumi stack init ${STACK_NAME}

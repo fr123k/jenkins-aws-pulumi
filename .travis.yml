@@ -18,6 +18,7 @@ before_install:
   - sudo apt-get -y install pwgen #used in Makefile to generate the random admin password 
 
 script:
+  - export STACK_SUFFIX="-$(pwgen -s 8 1)"
   - export ADMIN_PASSWORD=$(pwgen -s 16 1)
   - export SEED_JOB_GROOVY_FILE=jenkins/pipeline-configure.groovy
   - make deploy test

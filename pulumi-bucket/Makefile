@@ -1,4 +1,5 @@
-export STACK_NAME ?= pulumi-bucket
+export STACK_NAME ?= pulumi-bucket${STACK_SUFFIX}
+export AWS_REGION ?= eu-west-1
 
 go-init:
 	go mod init main
@@ -7,6 +8,17 @@ build:
 	go build -o $(shell basename $(shell pwd))
 
 prepare: build
+	pulumi plugin install resource aws 0.18.3
+	pulumi plugin ls
+	# pulumi login --local
+	pulumi login --cloud-url s3://s3-pulumi-state-d12f2f1
+	# pulumi login --cloud-url s3://$(shell cat ../output/pulumi-bucket.json | jq -r ."bucketName")
+	# pulumi stack rm -f ${STACK_NAME}
+	#pulumi stack select ${STACK_NAME}
+	pulumi stack init ${STACK_NAME}
+	pulumi config set aws:region eu-west-1
+
+pulumi-init: build
 	pulumi plugin install resource aws 0.18.3
 	pulumi plugin ls
 	pulumi login --local
