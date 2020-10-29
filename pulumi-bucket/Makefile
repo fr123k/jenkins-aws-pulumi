@@ -8,7 +8,7 @@ build:
 	go build -o $(shell basename $(shell pwd))
 
 prepare: build
-	pulumi plugin install resource aws 0.18.3
+	pulumi plugin install resource aws 3.10.1
 	pulumi plugin ls
 	# pulumi login --local
 	pulumi login --cloud-url s3://s3-pulumi-state-d12f2f1
@@ -19,7 +19,7 @@ prepare: build
 	pulumi config set aws:region eu-west-1
 
 pulumi-init: build
-	pulumi plugin install resource aws 0.18.3
+	pulumi plugin install resource aws 3.10.1
 	pulumi plugin ls
 	pulumi login --local
 	# pulumi stack rm -f ${STACK_NAME}

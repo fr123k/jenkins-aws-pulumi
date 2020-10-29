@@ -9,7 +9,7 @@ addons:
     update: true
 
 go:
-  - 1.12.x
+  - 1.14.x
 
 before_install:
   - curl -fsSL https://get.pulumi.com/ | sh
