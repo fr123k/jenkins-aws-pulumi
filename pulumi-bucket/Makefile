@@ -15,7 +15,7 @@ prepare: build
 	# pulumi login --cloud-url s3://$(shell cat ../output/pulumi-bucket.json | jq -r ."bucketName")
 	# pulumi stack rm -f ${STACK_NAME}
 	#pulumi stack select ${STACK_NAME}
-	pulumi stack init ${STACK_NAME}
+	pulumi stack select -c ${STACK_NAME}
 	pulumi config set aws:region eu-west-1
 
 pulumi-init: build

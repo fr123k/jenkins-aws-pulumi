@@ -11,9 +11,9 @@ node ("pulumi") {
         sh("pwgen")
         withCredentials([usernamePassword(credentialsId: 'aws-key-credentials', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
             try {
-                withEnv(['SEED_JOB_GROOVY_FILE=jenkins/pipeline-job.groovy']) {
+                withEnv(['SEED_JOB_GROOVY_FILE=jenkins/pipeline-job.groovy', 'STACK_SUFFIX=default']) {
                     sh("printenv | sort")
-                    sh("make local")
+                    sh("make deploy")
                 }
             } catch(err) {
                 currentBuild.result = 'UNSTABLE'

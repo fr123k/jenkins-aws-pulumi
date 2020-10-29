@@ -23,6 +23,9 @@ script:
   - export SEED_JOB_GROOVY_FILE=jenkins/pipeline-configure.groovy
   - make deploy test
 
+after_success:
+  - if [ "$TRAVIS_PULL_REQUEST" = "false" -a "$TRAVIS_BRANCH" = "master" ]; then make jenkins-aws; fi
+
 after_script:
   - make cleanup
 

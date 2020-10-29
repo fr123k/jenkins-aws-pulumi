@@ -13,7 +13,7 @@ prepare: build
 	pulumi login --cloud-url s3://s3-pulumi-state-d12f2f1
 	# pulumi stack rm -f ${STACK_NAME}
 	# pulumi stack select ${STACK_NAME}
-	pulumi stack init ${STACK_NAME}
+	pulumi stack select -c ${STACK_NAME}
 	pulumi config set aws:region eu-west-1
 	@pulumi config set --secret key $(shell cat ../output/pulumi-bucket.json | jq -r ."AccessKeys")
 	@pulumi config set --secret secret $(shell cat ../output/pulumi-bucket.json | jq -r ."AccessKeysSecret")
