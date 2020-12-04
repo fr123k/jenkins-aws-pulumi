@@ -128,6 +128,9 @@ func createJenkinsVM(ctx *pulumi.Context, awsKeyID string, awsKeySecret string) 
 	}
 
 	mostRecent := true
+	//TODO check if jenkins master jocker ami exists use it otherwise use this one.
+	//make this behaviour configurable always use the following ami except following cases
+	// 1) jenkins jocker ami exists 2) 1) && env var JENKINS_AMI=ami
 	ami, err := aws.GetAmi(ctx, &aws.GetAmiArgs{
 		Filters: []aws.GetAmiFilter{
 			{
@@ -143,6 +146,7 @@ func createJenkinsVM(ctx *pulumi.Context, awsKeyID string, awsKeySecret string) 
 		return err
 	}
 
+	//TODO cloud-init use only if jenkins ami doesn't exists.
 	yaml, err := getCloudInitYaml("cloud-init/cloud-init.yaml", awsKeyID, awsKeySecret)
 
 	ctx.Export("cloud-init", pulumi.String(*yaml))

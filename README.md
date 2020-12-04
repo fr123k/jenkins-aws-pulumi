@@ -53,6 +53,7 @@ https://www.pulumi.com/docs/intro/cloud-providers/aws/setup/
 creating urn:pulumi:jenkins-aws-s3::jenkins-aws-s3::aws:s3/bucket:Bucket::s3-pulumi-state: AccessDenied: Access Denied
     	status code: 403, request id: 04F5B33564D44CD7, host id: HwKam+lDpRhLDyk/sxy0tnFX6wvMwoBdSIui30/RYCdVcbF1sKpw7FKZO7V4eWSITQMn0OKBh2c=
 ```
+* add pulumi using AWS s3 bucket as state backed for full manage jenkins
 
 ## History
 
