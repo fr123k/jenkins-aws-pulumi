@@ -15,6 +15,7 @@
 package plugin
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -60,7 +61,8 @@ type provider struct {
 	cfgerr                 error                            // non-nil if a configure call fails.
 	cfgknown               bool                             // true if all configuration values are known.
 	cfgdone                chan bool                        // closed when configuration has completed.
-	acceptSecrets          bool                             // true if this plugin can consume strongly-typed secrets.
+	acceptSecrets          bool                             // true if this plugin accepts strongly-typed secrets.
+	acceptResources        bool                             // true if this plugin accepts strongly-typed resource refs.
 	supportsPreview        bool                             // true if this plugin supports previews for Create and Update.
 	disableProviderPreview bool                             // true if previews for Create and Update are disabled.
 }
@@ -105,11 +107,30 @@ func NewProvider(host Host, ctx *Context, pkg tokens.Package, version *semver.Ve
 	}, nil
 }
 
+func NewProviderWithClient(ctx *Context, pkg tokens.Package, client pulumirpc.ResourceProviderClient,
+	disableProviderPreview bool) Provider {
+
+	return &provider{
+		ctx:                    ctx,
+		pkg:                    pkg,
+		clientRaw:              client,
+		cfgdone:                make(chan bool),
+		disableProviderPreview: disableProviderPreview,
+	}
+}
+
 func (p *provider) Pkg() tokens.Package { return p.pkg }
 
 // label returns a base label for tracing functions.
 func (p *provider) label() string {
 	return fmt.Sprintf("Provider[%s, %p]", p.pkg, p)
+}
+
+func (p *provider) requestContext() context.Context {
+	if p.ctx == nil {
+		return context.Background()
+	}
+	return p.ctx.Request()
 }
 
 // isDiffCheckConfigLogicallyUnimplemented returns true when an rpcerror.Error should be treated as if it was an error
@@ -139,7 +160,7 @@ func isDiffCheckConfigLogicallyUnimplemented(err *rpcerror.Error, providerType t
 
 // GetSchema fetches the schema for this resource provider, if any.
 func (p *provider) GetSchema(version int) ([]byte, error) {
-	resp, err := p.clientRaw.GetSchema(p.ctx.Request(), &pulumirpc.GetSchemaRequest{
+	resp, err := p.clientRaw.GetSchema(p.requestContext(), &pulumirpc.GetSchemaRequest{
 		Version: int32(version),
 	})
 	if err != nil {
@@ -155,24 +176,26 @@ func (p *provider) CheckConfig(urn resource.URN, olds,
 	logging.V(7).Infof("%s executing (#olds=%d,#news=%d)", label, len(olds), len(news))
 
 	molds, err := MarshalProperties(olds, MarshalOptions{
-		Label:        fmt.Sprintf("%s.olds", label),
-		KeepUnknowns: allowUnknowns,
-		KeepSecrets:  p.acceptSecrets,
+		Label:         fmt.Sprintf("%s.olds", label),
+		KeepUnknowns:  allowUnknowns,
+		KeepSecrets:   p.acceptSecrets,
+		KeepResources: p.acceptResources,
 	})
 	if err != nil {
 		return nil, nil, err
 	}
 
 	mnews, err := MarshalProperties(news, MarshalOptions{
-		Label:        fmt.Sprintf("%s.news", label),
-		KeepUnknowns: allowUnknowns,
-		KeepSecrets:  p.acceptSecrets,
+		Label:         fmt.Sprintf("%s.news", label),
+		KeepUnknowns:  allowUnknowns,
+		KeepSecrets:   p.acceptSecrets,
+		KeepResources: p.acceptResources,
 	})
 	if err != nil {
 		return nil, nil, err
 	}
 
-	resp, err := p.clientRaw.CheckConfig(p.ctx.Request(), &pulumirpc.CheckRequest{
+	resp, err := p.clientRaw.CheckConfig(p.requestContext(), &pulumirpc.CheckRequest{
 		Urn:  string(urn),
 		Olds: molds,
 		News: mnews,
@@ -198,6 +221,7 @@ func (p *provider) CheckConfig(urn resource.URN, olds,
 			KeepUnknowns:   allowUnknowns,
 			RejectUnknowns: !allowUnknowns,
 			KeepSecrets:    true,
+			KeepResources:  true,
 		})
 		if err != nil {
 			return nil, nil, err
@@ -256,24 +280,26 @@ func (p *provider) DiffConfig(urn resource.URN, olds, news resource.PropertyMap,
 	label := fmt.Sprintf("%s.DiffConfig(%s)", p.label(), urn)
 	logging.V(7).Infof("%s executing (#olds=%d,#news=%d)", label, len(olds), len(news))
 	molds, err := MarshalProperties(olds, MarshalOptions{
-		Label:        fmt.Sprintf("%s.olds", label),
-		KeepUnknowns: true,
-		KeepSecrets:  p.acceptSecrets,
+		Label:         fmt.Sprintf("%s.olds", label),
+		KeepUnknowns:  true,
+		KeepSecrets:   p.acceptSecrets,
+		KeepResources: p.acceptResources,
 	})
 	if err != nil {
 		return DiffResult{}, err
 	}
 
 	mnews, err := MarshalProperties(news, MarshalOptions{
-		Label:        fmt.Sprintf("%s.news", label),
-		KeepUnknowns: true,
-		KeepSecrets:  p.acceptSecrets,
+		Label:         fmt.Sprintf("%s.news", label),
+		KeepUnknowns:  true,
+		KeepSecrets:   p.acceptSecrets,
+		KeepResources: p.acceptResources,
 	})
 	if err != nil {
 		return DiffResult{}, err
 	}
 
-	resp, err := p.clientRaw.DiffConfig(p.ctx.Request(), &pulumirpc.DiffRequest{
+	resp, err := p.clientRaw.DiffConfig(p.requestContext(), &pulumirpc.DiffRequest{
 		Urn:           string(urn),
 		Olds:          molds,
 		News:          mnews,
@@ -430,7 +456,7 @@ func (p *provider) Configure(inputs resource.PropertyMap) error {
 		}
 
 		if v.ContainsUnknowns() {
-			p.cfgknown, p.acceptSecrets = false, false
+			p.cfgknown, p.acceptSecrets, p.acceptResources = false, false, false
 			close(p.cfgdone)
 			return nil
 		}
@@ -452,9 +478,10 @@ func (p *provider) Configure(inputs resource.PropertyMap) error {
 	}
 
 	minputs, err := MarshalProperties(inputs, MarshalOptions{
-		Label:        fmt.Sprintf("%s.inputs", label),
-		KeepUnknowns: true,
-		KeepSecrets:  true,
+		Label:         fmt.Sprintf("%s.inputs", label),
+		KeepUnknowns:  true,
+		KeepSecrets:   true,
+		KeepResources: true,
 	})
 	if err != nil {
 		p.cfgerr = errors.Wrapf(err, "marshaling provider inputs")
@@ -465,10 +492,11 @@ func (p *provider) Configure(inputs resource.PropertyMap) error {
 	// Spawn the configure to happen in parallel.  This ensures that we remain responsive elsewhere that might
 	// want to make forward progress, even as the configure call is happening.
 	go func() {
-		resp, err := p.clientRaw.Configure(p.ctx.Request(), &pulumirpc.ConfigureRequest{
-			AcceptSecrets: true,
-			Variables:     config,
-			Args:          minputs,
+		resp, err := p.clientRaw.Configure(p.requestContext(), &pulumirpc.ConfigureRequest{
+			AcceptSecrets:   true,
+			AcceptResources: true,
+			Variables:       config,
+			Args:            minputs,
 		})
 		if err != nil {
 			rpcError := rpcerror.Convert(err)
@@ -476,7 +504,10 @@ func (p *provider) Configure(inputs resource.PropertyMap) error {
 			err = createConfigureError(rpcError)
 		}
 		// Acquire the lock, publish the results, and notify any waiters.
-		p.acceptSecrets, p.supportsPreview = resp.GetAcceptSecrets(), resp.GetSupportsPreview()
+		p.acceptSecrets = resp.GetAcceptSecrets()
+		p.acceptResources = resp.GetAcceptResources()
+		p.supportsPreview = resp.GetSupportsPreview()
+
 		p.cfgknown, p.cfgerr = true, err
 		close(p.cfgdone)
 	}()
@@ -503,23 +534,25 @@ func (p *provider) Check(urn resource.URN,
 	}
 
 	molds, err := MarshalProperties(olds, MarshalOptions{
-		Label:        fmt.Sprintf("%s.olds", label),
-		KeepUnknowns: allowUnknowns,
-		KeepSecrets:  p.acceptSecrets,
+		Label:         fmt.Sprintf("%s.olds", label),
+		KeepUnknowns:  allowUnknowns,
+		KeepSecrets:   p.acceptSecrets,
+		KeepResources: p.acceptResources,
 	})
 	if err != nil {
 		return nil, nil, err
 	}
 	mnews, err := MarshalProperties(news, MarshalOptions{
-		Label:        fmt.Sprintf("%s.news", label),
-		KeepUnknowns: allowUnknowns,
-		KeepSecrets:  p.acceptSecrets,
+		Label:         fmt.Sprintf("%s.news", label),
+		KeepUnknowns:  allowUnknowns,
+		KeepSecrets:   p.acceptSecrets,
+		KeepResources: p.acceptResources,
 	})
 	if err != nil {
 		return nil, nil, err
 	}
 
-	resp, err := client.Check(p.ctx.Request(), &pulumirpc.CheckRequest{
+	resp, err := client.Check(p.requestContext(), &pulumirpc.CheckRequest{
 		Urn:  string(urn),
 		Olds: molds,
 		News: mnews,
@@ -538,6 +571,7 @@ func (p *provider) Check(urn resource.URN,
 			KeepUnknowns:   allowUnknowns,
 			RejectUnknowns: !allowUnknowns,
 			KeepSecrets:    true,
+			KeepResources:  true,
 		})
 		if err != nil {
 			return nil, nil, err
@@ -595,20 +629,22 @@ func (p *provider) Diff(urn resource.URN, id resource.ID,
 		ElideAssetContents: true,
 		KeepUnknowns:       allowUnknowns,
 		KeepSecrets:        p.acceptSecrets,
+		KeepResources:      p.acceptResources,
 	})
 	if err != nil {
 		return DiffResult{}, err
 	}
 	mnews, err := MarshalProperties(news, MarshalOptions{
-		Label:        fmt.Sprintf("%s.news", label),
-		KeepUnknowns: allowUnknowns,
-		KeepSecrets:  p.acceptSecrets,
+		Label:         fmt.Sprintf("%s.news", label),
+		KeepUnknowns:  allowUnknowns,
+		KeepSecrets:   p.acceptSecrets,
+		KeepResources: p.acceptResources,
 	})
 	if err != nil {
 		return DiffResult{}, err
 	}
 
-	resp, err := client.Diff(p.ctx.Request(), &pulumirpc.DiffRequest{
+	resp, err := client.Diff(p.requestContext(), &pulumirpc.DiffRequest{
 		Id:            string(id),
 		Urn:           string(urn),
 		Olds:          molds,
@@ -677,9 +713,10 @@ func (p *provider) Create(urn resource.URN, props resource.PropertyMap, timeout 
 	contract.Assert(p.cfgknown)
 
 	mprops, err := MarshalProperties(props, MarshalOptions{
-		Label:        fmt.Sprintf("%s.inputs", label),
-		KeepUnknowns: preview,
-		KeepSecrets:  p.acceptSecrets,
+		Label:         fmt.Sprintf("%s.inputs", label),
+		KeepUnknowns:  preview,
+		KeepSecrets:   p.acceptSecrets,
+		KeepResources: p.acceptResources,
 	})
 	if err != nil {
 		return "", nil, resource.StatusOK, err
@@ -689,7 +726,7 @@ func (p *provider) Create(urn resource.URN, props resource.PropertyMap, timeout 
 	var liveObject *_struct.Struct
 	var resourceError error
 	var resourceStatus = resource.StatusOK
-	resp, err := client.Create(p.ctx.Request(), &pulumirpc.CreateRequest{
+	resp, err := client.Create(p.requestContext(), &pulumirpc.CreateRequest{
 		Urn:        string(urn),
 		Properties: mprops,
 		Timeout:    timeout,
@@ -715,8 +752,10 @@ func (p *provider) Create(urn resource.URN, props resource.PropertyMap, timeout 
 
 	outs, err := UnmarshalProperties(liveObject, MarshalOptions{
 		Label:          fmt.Sprintf("%s.outputs", label),
-		RejectUnknowns: true,
+		RejectUnknowns: !preview,
+		KeepUnknowns:   preview,
 		KeepSecrets:    true,
+		KeepResources:  true,
 	})
 	if err != nil {
 		return "", nil, resourceStatus, err
@@ -768,6 +807,7 @@ func (p *provider) Read(urn resource.URN, id resource.ID,
 			Label:              label,
 			ElideAssetContents: true,
 			KeepSecrets:        p.acceptSecrets,
+			KeepResources:      p.acceptResources,
 		})
 		if err != nil {
 			return ReadResult{}, resource.StatusUnknown, err
@@ -778,6 +818,7 @@ func (p *provider) Read(urn resource.URN, id resource.ID,
 		Label:              label,
 		ElideAssetContents: true,
 		KeepSecrets:        p.acceptSecrets,
+		KeepResources:      p.acceptResources,
 	})
 	if err != nil {
 		return ReadResult{}, resource.StatusUnknown, err
@@ -789,7 +830,7 @@ func (p *provider) Read(urn resource.URN, id resource.ID,
 	var liveInputs *_struct.Struct
 	var resourceError error
 	var resourceStatus = resource.StatusOK
-	resp, err := client.Read(p.ctx.Request(), &pulumirpc.ReadRequest{
+	resp, err := client.Read(p.requestContext(), &pulumirpc.ReadRequest{
 		Id:         string(id),
 		Urn:        string(urn),
 		Properties: mstate,
@@ -819,6 +860,7 @@ func (p *provider) Read(urn resource.URN, id resource.ID,
 		Label:          fmt.Sprintf("%s.outputs", label),
 		RejectUnknowns: true,
 		KeepSecrets:    true,
+		KeepResources:  true,
 	})
 	if err != nil {
 		return ReadResult{}, resourceStatus, err
@@ -830,6 +872,7 @@ func (p *provider) Read(urn resource.URN, id resource.ID,
 			Label:          label + ".inputs",
 			RejectUnknowns: true,
 			KeepSecrets:    true,
+			KeepResources:  true,
 		})
 		if err != nil {
 			return ReadResult{}, resourceStatus, err
@@ -887,14 +930,16 @@ func (p *provider) Update(urn resource.URN, id resource.ID,
 		Label:              fmt.Sprintf("%s.olds", label),
 		ElideAssetContents: true,
 		KeepSecrets:        p.acceptSecrets,
+		KeepResources:      p.acceptResources,
 	})
 	if err != nil {
 		return nil, resource.StatusOK, err
 	}
 	mnews, err := MarshalProperties(news, MarshalOptions{
-		Label:        fmt.Sprintf("%s.news", label),
-		KeepUnknowns: preview,
-		KeepSecrets:  p.acceptSecrets,
+		Label:         fmt.Sprintf("%s.news", label),
+		KeepUnknowns:  preview,
+		KeepSecrets:   p.acceptSecrets,
+		KeepResources: p.acceptResources,
 	})
 	if err != nil {
 		return nil, resource.StatusOK, err
@@ -903,7 +948,7 @@ func (p *provider) Update(urn resource.URN, id resource.ID,
 	var liveObject *_struct.Struct
 	var resourceError error
 	var resourceStatus = resource.StatusOK
-	resp, err := client.Update(p.ctx.Request(), &pulumirpc.UpdateRequest{
+	resp, err := client.Update(p.requestContext(), &pulumirpc.UpdateRequest{
 		Id:            string(id),
 		Urn:           string(urn),
 		Olds:          molds,
@@ -926,8 +971,10 @@ func (p *provider) Update(urn resource.URN, id resource.ID,
 
 	outs, err := UnmarshalProperties(liveObject, MarshalOptions{
 		Label:          fmt.Sprintf("%s.outputs", label),
-		RejectUnknowns: true,
+		RejectUnknowns: !preview,
+		KeepUnknowns:   preview,
 		KeepSecrets:    true,
+		KeepResources:  true,
 	})
 	if err != nil {
 		return nil, resourceStatus, err
@@ -960,6 +1007,7 @@ func (p *provider) Delete(urn resource.URN, id resource.ID, props resource.Prope
 		Label:              label,
 		ElideAssetContents: true,
 		KeepSecrets:        p.acceptSecrets,
+		KeepResources:      p.acceptResources,
 	})
 	if err != nil {
 		return resource.StatusOK, err
@@ -974,7 +1022,7 @@ func (p *provider) Delete(urn resource.URN, id resource.ID, props resource.Prope
 	// We should only be calling {Create,Update,Delete} if the provider is fully configured.
 	contract.Assert(p.cfgknown)
 
-	if _, err := client.Delete(p.ctx.Request(), &pulumirpc.DeleteRequest{
+	if _, err := client.Delete(p.requestContext(), &pulumirpc.DeleteRequest{
 		Id:         string(id),
 		Urn:        string(urn),
 		Properties: mprops,
@@ -1016,9 +1064,10 @@ func (p *provider) Construct(info ConstructInfo, typ tokens.Type, name tokens.QN
 
 	// Marshal the input properties.
 	minputs, err := MarshalProperties(inputs, MarshalOptions{
-		Label:        fmt.Sprintf("%s.inputs", label),
-		KeepUnknowns: true,
-		KeepSecrets:  p.acceptSecrets,
+		Label:         fmt.Sprintf("%s.inputs", label),
+		KeepUnknowns:  true,
+		KeepSecrets:   p.acceptSecrets,
+		KeepResources: p.acceptResources,
 	})
 	if err != nil {
 		return ConstructResult{}, err
@@ -1052,7 +1101,7 @@ func (p *provider) Construct(info ConstructInfo, typ tokens.Type, name tokens.QN
 		config[k.String()] = v
 	}
 
-	resp, err := client.Construct(p.ctx.Request(), &pulumirpc.ConstructRequest{
+	resp, err := client.Construct(p.requestContext(), &pulumirpc.ConstructRequest{
 		Project:           info.Project,
 		Stack:             info.Stack,
 		Config:            config,
@@ -1074,9 +1123,10 @@ func (p *provider) Construct(info ConstructInfo, typ tokens.Type, name tokens.QN
 	}
 
 	outputs, err := UnmarshalProperties(resp.GetState(), MarshalOptions{
-		Label:        fmt.Sprintf("%s.outputs", label),
-		KeepUnknowns: info.DryRun,
-		KeepSecrets:  true,
+		Label:         fmt.Sprintf("%s.outputs", label),
+		KeepUnknowns:  info.DryRun,
+		KeepSecrets:   true,
+		KeepResources: true,
 	})
 	if err != nil {
 		return ConstructResult{}, err
@@ -1119,14 +1169,19 @@ func (p *provider) Invoke(tok tokens.ModuleMember, args resource.PropertyMap) (r
 	}
 
 	margs, err := MarshalProperties(args, MarshalOptions{
-		Label:       fmt.Sprintf("%s.args", label),
-		KeepSecrets: p.acceptSecrets,
+		Label:         fmt.Sprintf("%s.args", label),
+		KeepSecrets:   p.acceptSecrets,
+		KeepResources: p.acceptResources,
 	})
 	if err != nil {
 		return nil, nil, err
 	}
 
-	resp, err := client.Invoke(p.ctx.Request(), &pulumirpc.InvokeRequest{Tok: string(tok), Args: margs})
+	resp, err := client.Invoke(p.requestContext(), &pulumirpc.InvokeRequest{
+		Tok:             string(tok),
+		Args:            margs,
+		AcceptResources: p.acceptResources,
+	})
 	if err != nil {
 		rpcError := rpcerror.Convert(err)
 		logging.V(7).Infof("%s failed: %v", label, rpcError.Message())
@@ -1138,6 +1193,7 @@ func (p *provider) Invoke(tok tokens.ModuleMember, args resource.PropertyMap) (r
 		Label:          fmt.Sprintf("%s.returns", label),
 		RejectUnknowns: true,
 		KeepSecrets:    true,
+		KeepResources:  true,
 	})
 	if err != nil {
 		return nil, nil, err
@@ -1177,15 +1233,20 @@ func (p *provider) StreamInvoke(
 	}
 
 	margs, err := MarshalProperties(args, MarshalOptions{
-		Label:       fmt.Sprintf("%s.args", label),
-		KeepSecrets: p.acceptSecrets,
+		Label:         fmt.Sprintf("%s.args", label),
+		KeepSecrets:   p.acceptSecrets,
+		KeepResources: p.acceptResources,
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	streamClient, err := client.StreamInvoke(
-		p.ctx.Request(), &pulumirpc.InvokeRequest{Tok: string(tok), Args: margs})
+		p.requestContext(), &pulumirpc.InvokeRequest{
+			Tok:             string(tok),
+			Args:            margs,
+			AcceptResources: p.acceptResources,
+		})
 	if err != nil {
 		rpcError := rpcerror.Convert(err)
 		logging.V(7).Infof("%s failed: %v", label, rpcError.Message())
@@ -1206,6 +1267,7 @@ func (p *provider) StreamInvoke(
 			Label:          fmt.Sprintf("%s.returns", label),
 			RejectUnknowns: true,
 			KeepSecrets:    true,
+			KeepResources:  true,
 		})
 		if err != nil {
 			return nil, err
@@ -1235,7 +1297,7 @@ func (p *provider) GetPluginInfo() (workspace.PluginInfo, error) {
 
 	// Calling GetPluginInfo happens immediately after loading, and does not require configuration to proceed.
 	// Thus, we access the clientRaw property, rather than calling getClient.
-	resp, err := p.clientRaw.GetPluginInfo(p.ctx.Request(), &pbempty.Empty{})
+	resp, err := p.clientRaw.GetPluginInfo(p.requestContext(), &pbempty.Empty{})
 	if err != nil {
 		rpcError := rpcerror.Convert(err)
 		logging.V(7).Infof("%s failed: err=%v", label, rpcError.Message())
@@ -1251,16 +1313,21 @@ func (p *provider) GetPluginInfo() (workspace.PluginInfo, error) {
 		version = &sv
 	}
 
+	path := ""
+	if p.plug != nil {
+		path = p.plug.Bin
+	}
+
 	return workspace.PluginInfo{
 		Name:    string(p.pkg),
-		Path:    p.plug.Bin,
+		Path:    path,
 		Kind:    workspace.ResourcePlugin,
 		Version: version,
 	}, nil
 }
 
 func (p *provider) SignalCancellation() error {
-	_, err := p.clientRaw.Cancel(p.ctx.Request(), &pbempty.Empty{})
+	_, err := p.clientRaw.Cancel(p.requestContext(), &pbempty.Empty{})
 	if err != nil {
 		rpcError := rpcerror.Convert(err)
 		logging.V(8).Infof("provider received rpc error `%s`: `%s`", rpcError.Code(),
@@ -1277,6 +1344,9 @@ func (p *provider) SignalCancellation() error {
 
 // Close tears down the underlying plugin RPC connection and process.
 func (p *provider) Close() error {
+	if p.plug == nil {
+		return nil
+	}
 	return p.plug.Close()
 }
 

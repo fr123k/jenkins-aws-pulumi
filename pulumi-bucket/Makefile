@@ -3,6 +3,8 @@ export AWS_REGION ?= eu-west-1
 
 go-init:
 	go mod init main
+	go mod tidy
+	go mod vendor
 
 build:
 	go build -o $(shell basename $(shell pwd))
