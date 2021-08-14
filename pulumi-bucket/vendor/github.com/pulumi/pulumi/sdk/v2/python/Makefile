@@ -1,15 +1,18 @@
 PROJECT_NAME     := Pulumi Python SDK
 LANGHOST_PKG     := github.com/pulumi/pulumi/sdk/v2/python/cmd/pulumi-language-python
-VERSION          := $(shell ../../scripts/get-version HEAD)
-PYPI_VERSION     := $(shell cd ../../scripts && ./get-py-version HEAD)
+VERSION          := $(shell cd ../../ && pulumictl get version)
+PYPI_VERSION 	 := $(shell cd ../../ && pulumictl get version --language python)
 
 PYENV := ./env
 PYENVSRC := $(PYENV)/src
 
+PROJECT_PKGS    := $(shell go list ./cmd/...)
+TESTPARALLELISM := 10
+
 include ../../build/common.mk
 
 ensure::
-	pipenv --python 3 install --dev
+	pipenv install --dev
 	mkdir -p $(PYENVSRC)
 
 build_package::
@@ -39,9 +42,13 @@ install_plugin:: build_plugin
 install:: install_package install_plugin
 
 test_fast:: build
+	go test -count=1 -cover -parallel ${TESTPARALLELISM} ${PROJECT_PKGS}
 	pipenv run pip install ./env/src
-	pipenv run python -m unittest discover -s lib/test -v
-	pipenv run python -m unittest discover -s lib/test_with_mocks -v
+	# TODO the ignored test seems to fail in pytest but not unittest. Need to trackdown why
+	pipenv run pytest lib/test --ignore lib/test/langhost/resource_thens/test_resource_thens.py
+	pipenv run python -m unittest lib/test/langhost/resource_thens/test_resource_thens.py
+	# Using python -m also adds lib/test_with_mocks to sys.path which avoids package resolution issues.
+	pushd lib/test_with_mocks ; pipenv run python -m pytest ; popd
 
 test_all:: test_fast
 
@@ -51,7 +58,12 @@ dist::
 	cp ./dist/pulumi-resource-pulumi-python "$$(go env GOPATH)"/bin/
 	cp ./dist/pulumi-analyzer-policy-python "$$(go env GOPATH)"/bin/
 
-brew:: dist
+brew:: BREW_VERSION := $(shell ../../scripts/get-version HEAD)
+brew::
+	go install -ldflags "-X github.com/pulumi/pulumi/sdk/v2/go/common/version.Version=${BREW_VERSION}" ${LANGHOST_PKG}
+	cp ./cmd/pulumi-language-python-exec "$$(go env GOPATH)"/bin/
+	cp ./dist/pulumi-resource-pulumi-python "$$(go env GOPATH)"/bin/
+	cp ./dist/pulumi-analyzer-policy-python "$$(go env GOPATH)"/bin/
 
 publish:: build_package
 	twine upload \
