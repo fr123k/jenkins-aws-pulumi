@@ -1,7 +1,6 @@
 package main
 
 import (
-    "fmt"
     "os"
     "time"
 
@@ -37,17 +36,17 @@ func createInfraStructure(ctx *pulumi.Context) error {
     //TODO fetch new created aws key and secret
     // awsKeyID := config.Require("key")
     // awsKeySecret := config.Require("secret")
-    userDataEnvVariables := map[string]string{
-        "{{ ADMIN_PASSWORD }}":   "ADMIN_PASSWORD",
-        "{{ SEED_BRANCH_JOBS }}": "SEED_BRANCH_JOBS",
+    userDataEnvPropertyVariables := map[string]string{
+        "ADMIN_PASSWORD":   "ADMIN_PASSWORD",
+        "SEED_BRANCH_JOBS": "SEED_BRANCH_JOBS",
     }
 
-    userDataSetVariables := map[string]string{
-        "{{ AWS_KEY_ID }}":     fmt.Sprintf("AWS_KEY_ID=%s", "undefined"),
-        "{{ AWS_KEY_SECRET }}": fmt.Sprintf("AWS_KEY_SECRET=%s", "undefined"),
+    userDataPropertyVariables := map[string]string{
+        "AWS_KEY_ID": "undefined",
+        "AWS_KEY_SECRET": "undefined",
     }
 
-    userData, err := model.NewUserData("cloud-init/cloud-init.yaml", append(model.TemplateVariablesEnvironment(userDataEnvVariables), model.TemplateVariablesString(userDataSetVariables)...))
+    userData, err := model.NewUserData("cloud-init/cloud-init.yaml", append(model.TemplateVariablesEnvProperty(userDataEnvPropertyVariables), model.TemplateVariablesStringProperty(userDataPropertyVariables)...))
     if err != nil {
         return err
     }
