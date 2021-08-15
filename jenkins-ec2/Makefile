@@ -17,8 +17,8 @@ prepare: build
 	# pulumi stack select ${STACK_NAME}
 	pulumi stack select -c ${STACK_NAME}
 	pulumi config set aws:region eu-west-1
-	@pulumi config set --secret key $(shell cat ../output/pulumi-bucket.json | jq -r ."AccessKeys")
-	@pulumi config set --secret secret $(shell cat ../output/pulumi-bucket.json | jq -r ."AccessKeysSecret")
+	# @pulumi config set --secret key $(shell cat ../output/pulumi-bucket.json | jq -r ."AccessKeys")
+	# @pulumi config set --secret secret $(shell cat ../output/pulumi-bucket.json | jq -r ."AccessKeysSecret")
 
 apply:
 	pulumi up --yes
