@@ -47,7 +47,7 @@ func createInfraStructure(ctx *pulumi.Context) error {
 		"{{ AWS_KEY_SECRET }}": fmt.Sprintf("AWS_KEY_SECRET=%s", "undefined"),
 	}
 
-	userData, err := model.NewUserData("cloud-init/jenkins.yaml", append(model.TemplateVariablesEnvironment(userDataEnvVariables), model.TemplateVariablesString(userDataSetVariables)...))
+	userData, err := model.NewUserData("cloud-init/cloud-init.yaml", append(model.TemplateVariablesEnvironment(userDataEnvVariables), model.TemplateVariablesString(userDataSetVariables)...))
 	if err != nil {
 		return err
 	}
