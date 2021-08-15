@@ -9,7 +9,7 @@ build:
 	go build -o $(shell basename $(shell pwd))
 
 prepare: build
-	pulumi plugin install resource aws 3.10.1
+	# pulumi plugin install resource aws 4.15
 	pulumi plugin ls
 	# pulumi login --local
 	pulumi login --cloud-url s3://s3-pulumi-state-d12f2f1

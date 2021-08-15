@@ -1,41 +1,47 @@
-# github.com/blang/semver v3.5.1+incompatible
+# github.com/HdrHistogram/hdrhistogram-go v1.1.0
 ## explicit
+# github.com/Microsoft/go-winio v0.5.0
+github.com/Microsoft/go-winio
+github.com/Microsoft/go-winio/pkg/guid
+# github.com/blang/semver v3.5.1+incompatible
 github.com/blang/semver
-# github.com/cheggaaa/pb v1.0.18
+# github.com/cheggaaa/pb v1.0.29
 ## explicit
 github.com/cheggaaa/pb
 # github.com/creasty/defaults v1.5.1
 github.com/creasty/defaults
-# github.com/djherbis/times v1.2.0
+# github.com/djherbis/times v1.5.0
 ## explicit
 github.com/djherbis/times
 # github.com/emirpasic/gods v1.12.0
-## explicit
 github.com/emirpasic/gods/containers
 github.com/emirpasic/gods/lists
 github.com/emirpasic/gods/lists/arraylist
 github.com/emirpasic/gods/trees
 github.com/emirpasic/gods/trees/binaryheap
 github.com/emirpasic/gods/utils
-# github.com/fr123k/pulumi-wireguard-aws v0.0.0-20210814123457-37c807cdbc72
+# github.com/fr123k/pulumi-wireguard-aws v0.0.0-20210815174501-6dc459a74ff2
 ## explicit
+github.com/fr123k/pulumi-wireguard-aws/pkg/actors
+github.com/fr123k/pulumi-wireguard-aws/pkg/aws/compute
+github.com/fr123k/pulumi-wireguard-aws/pkg/aws/network
 github.com/fr123k/pulumi-wireguard-aws/pkg/model
+github.com/fr123k/pulumi-wireguard-aws/pkg/shared
 github.com/fr123k/pulumi-wireguard-aws/pkg/ssh
 github.com/fr123k/pulumi-wireguard-aws/pkg/utility
-# github.com/gofrs/flock v0.7.1
+# github.com/gofrs/flock v0.8.1
 ## explicit
 github.com/gofrs/flock
-# github.com/gofrs/uuid v3.3.0+incompatible
-github.com/gofrs/uuid
-# github.com/gogo/protobuf v1.3.1
+# github.com/gofrs/uuid v4.0.0+incompatible
 ## explicit
+github.com/gofrs/uuid
+# github.com/gogo/protobuf v1.3.2
 github.com/gogo/protobuf/io
 github.com/gogo/protobuf/proto
-# github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
+# github.com/golang/glog v0.0.0-20210429001901-424d2337a529
 ## explicit
 github.com/golang/glog
-# github.com/golang/protobuf v1.5.0
-## explicit
+# github.com/golang/protobuf v1.5.2
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/protoc-gen-go/descriptor
 github.com/golang/protobuf/ptypes
@@ -45,46 +51,42 @@ github.com/golang/protobuf/ptypes/empty
 github.com/golang/protobuf/ptypes/struct
 github.com/golang/protobuf/ptypes/timestamp
 # github.com/grpc-ecosystem/grpc-opentracing v0.0.0-20180507213350-8e809c8a8645
-## explicit
 github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc
-# github.com/hashicorp/errwrap v1.0.0
+# github.com/hashicorp/errwrap v1.1.0
+## explicit
 github.com/hashicorp/errwrap
-# github.com/hashicorp/go-multierror v1.0.0
+# github.com/hashicorp/go-multierror v1.1.1
 ## explicit
 github.com/hashicorp/go-multierror
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
 # github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99
 github.com/jbenet/go-context/io
-# github.com/kevinburke/ssh_config v0.0.0-20190725054713-01f96b0aa0cd
+# github.com/kevinburke/ssh_config v1.1.0
+## explicit
 github.com/kevinburke/ssh_config
-# github.com/mattn/go-runewidth v0.0.8
+# github.com/mattn/go-runewidth v0.0.13
 ## explicit
 github.com/mattn/go-runewidth
 # github.com/mitchellh/go-homedir v1.1.0
 github.com/mitchellh/go-homedir
 # github.com/mitchellh/go-ps v1.0.0
-## explicit
 github.com/mitchellh/go-ps
-# github.com/opentracing/basictracer-go v1.0.0
+# github.com/opentracing/basictracer-go v1.1.0
 ## explicit
 github.com/opentracing/basictracer-go
 github.com/opentracing/basictracer-go/wire
-# github.com/opentracing/opentracing-go v1.1.0
+# github.com/opentracing/opentracing-go v1.2.0
 ## explicit
 github.com/opentracing/opentracing-go
 github.com/opentracing/opentracing-go/ext
 github.com/opentracing/opentracing-go/log
 # github.com/pkg/errors v0.9.1
-## explicit
 github.com/pkg/errors
-# github.com/pulumi/pulumi-aws/sdk/v4 v4.14.0
-## explicit
+# github.com/pulumi/pulumi-aws/sdk/v4 v4.15.0
 github.com/pulumi/pulumi-aws/sdk/v4/go/aws
 github.com/pulumi/pulumi-aws/sdk/v4/go/aws/ec2
-# github.com/pulumi/pulumi/sdk/v2 v2.25.2
-## explicit
-# github.com/pulumi/pulumi/sdk/v3 v3.9.1
+# github.com/pulumi/pulumi/sdk/v3 v3.10.1
 ## explicit
 github.com/pulumi/pulumi/sdk/v3/go/common/apitype
 github.com/pulumi/pulumi/sdk/v3/go/common/diag
@@ -114,34 +116,32 @@ github.com/pulumi/pulumi/sdk/v3/go/pulumi/config
 github.com/pulumi/pulumi/sdk/v3/nodejs/npm
 github.com/pulumi/pulumi/sdk/v3/proto/go
 github.com/pulumi/pulumi/sdk/v3/python
-# github.com/sabhiram/go-gitignore v0.0.0-20180611051255-d3107576ba94
+# github.com/rivo/uniseg v0.2.0
+github.com/rivo/uniseg
+# github.com/sabhiram/go-gitignore v0.0.0-20201211210132-54b8a0bf510f
 ## explicit
 github.com/sabhiram/go-gitignore
-# github.com/satori/go.uuid v1.2.0
+# github.com/sergi/go-diff v1.2.0
 ## explicit
-# github.com/sergi/go-diff v1.1.0
 github.com/sergi/go-diff/diffmatchpatch
 # github.com/spf13/cast v1.3.1
-## explicit
 github.com/spf13/cast
-# github.com/spf13/cobra v1.0.0
+# github.com/spf13/cobra v1.2.1
 ## explicit
 github.com/spf13/cobra
-# github.com/spf13/pflag v1.0.3
+# github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
 # github.com/src-d/gcfg v1.4.0
-## explicit
 github.com/src-d/gcfg
 github.com/src-d/gcfg/scanner
 github.com/src-d/gcfg/token
 github.com/src-d/gcfg/types
-# github.com/texttheater/golang-levenshtein v0.0.0-20191208221605-eb6844b05fc6
+# github.com/texttheater/golang-levenshtein v1.0.1
 ## explicit
 github.com/texttheater/golang-levenshtein/levenshtein
 # github.com/tweekmonster/luser v0.0.0-20161003172636-3fa38070dbd7
-## explicit
 github.com/tweekmonster/luser
-# github.com/uber/jaeger-client-go v2.22.1+incompatible
+# github.com/uber/jaeger-client-go v2.29.1+incompatible
 ## explicit
 github.com/uber/jaeger-client-go
 github.com/uber/jaeger-client-go/internal/baggage
@@ -156,15 +156,16 @@ github.com/uber/jaeger-client-go/thrift-gen/sampling
 github.com/uber/jaeger-client-go/thrift-gen/zipkincore
 github.com/uber/jaeger-client-go/transport/zipkin
 github.com/uber/jaeger-client-go/utils
-# github.com/uber/jaeger-lib v2.2.0+incompatible
+# github.com/uber/jaeger-lib v2.4.1+incompatible
 ## explicit
 github.com/uber/jaeger-lib/metrics
-# github.com/xanzy/ssh-agent v0.2.1
+# github.com/xanzy/ssh-agent v0.3.1
+## explicit
 github.com/xanzy/ssh-agent
-# go.uber.org/atomic v1.6.0
+# go.uber.org/atomic v1.9.0
 ## explicit
 go.uber.org/atomic
-# golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
+# golang.org/x/crypto v0.0.0-20210813211128-0a44fdfbc16e
 ## explicit
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/cast5
@@ -187,7 +188,7 @@ golang.org/x/crypto/ssh/agent
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/crypto/ssh/knownhosts
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/net v0.0.0-20210614182718-04defd469f4e
+# golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d
 ## explicit
 golang.org/x/net/context
 golang.org/x/net/http/httpguts
@@ -198,7 +199,7 @@ golang.org/x/net/internal/socks
 golang.org/x/net/internal/timeseries
 golang.org/x/net/proxy
 golang.org/x/net/trace
-# golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1
+# golang.org/x/sys v0.0.0-20210809222454-d867a43fc93e
 ## explicit
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
@@ -206,29 +207,31 @@ golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 golang.org/x/sys/windows/registry
-# golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
+# golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
+## explicit
 golang.org/x/term
-# golang.org/x/text v0.3.6
+# golang.org/x/text v0.3.7
 ## explicit
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
-# google.golang.org/genproto v0.0.0-20200608115520-7c474a2e3482
+# google.golang.org/genproto v0.0.0-20210813162853-db860fec028c
+## explicit
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.29.1
+# google.golang.org/grpc v1.40.0
 ## explicit
 google.golang.org/grpc
 google.golang.org/grpc/attributes
 google.golang.org/grpc/backoff
 google.golang.org/grpc/balancer
 google.golang.org/grpc/balancer/base
+google.golang.org/grpc/balancer/grpclb/state
 google.golang.org/grpc/balancer/roundrobin
 google.golang.org/grpc/binarylog/grpc_binarylog_v1
 google.golang.org/grpc/codes
 google.golang.org/grpc/connectivity
 google.golang.org/grpc/credentials
-google.golang.org/grpc/credentials/internal
 google.golang.org/grpc/encoding
 google.golang.org/grpc/encoding/proto
 google.golang.org/grpc/grpclog
@@ -238,19 +241,24 @@ google.golang.org/grpc/internal/balancerload
 google.golang.org/grpc/internal/binarylog
 google.golang.org/grpc/internal/buffer
 google.golang.org/grpc/internal/channelz
+google.golang.org/grpc/internal/credentials
 google.golang.org/grpc/internal/envconfig
 google.golang.org/grpc/internal/grpclog
 google.golang.org/grpc/internal/grpcrand
 google.golang.org/grpc/internal/grpcsync
 google.golang.org/grpc/internal/grpcutil
+google.golang.org/grpc/internal/metadata
+google.golang.org/grpc/internal/resolver
 google.golang.org/grpc/internal/resolver/dns
 google.golang.org/grpc/internal/resolver/passthrough
+google.golang.org/grpc/internal/resolver/unix
+google.golang.org/grpc/internal/serviceconfig
 google.golang.org/grpc/internal/status
 google.golang.org/grpc/internal/syscall
 google.golang.org/grpc/internal/transport
+google.golang.org/grpc/internal/transport/networktype
 google.golang.org/grpc/keepalive
 google.golang.org/grpc/metadata
-google.golang.org/grpc/naming
 google.golang.org/grpc/peer
 google.golang.org/grpc/reflection
 google.golang.org/grpc/reflection/grpc_reflection_v1alpha
@@ -301,7 +309,6 @@ gopkg.in/src-d/go-billy.v4/helper/polyfill
 gopkg.in/src-d/go-billy.v4/osfs
 gopkg.in/src-d/go-billy.v4/util
 # gopkg.in/src-d/go-git.v4 v4.13.1
-## explicit
 gopkg.in/src-d/go-git.v4
 gopkg.in/src-d/go-git.v4/config
 gopkg.in/src-d/go-git.v4/internal/revision
@@ -344,13 +351,10 @@ gopkg.in/src-d/go-git.v4/utils/merkletrie/index
 gopkg.in/src-d/go-git.v4/utils/merkletrie/internal/frame
 gopkg.in/src-d/go-git.v4/utils/merkletrie/noder
 # gopkg.in/warnings.v0 v0.1.2
-## explicit
 gopkg.in/warnings.v0
-# gopkg.in/yaml.v2 v2.2.8
-## explicit
+# gopkg.in/yaml.v2 v2.4.0
 gopkg.in/yaml.v2
 # sourcegraph.com/sourcegraph/appdash v0.0.0-20190731080439-ebfcffb1b5c0
-## explicit
 sourcegraph.com/sourcegraph/appdash
 sourcegraph.com/sourcegraph/appdash/internal/wire
 sourcegraph.com/sourcegraph/appdash/opentracing
