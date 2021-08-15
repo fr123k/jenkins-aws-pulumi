@@ -5,10 +5,12 @@ go 1.15
 require (
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/cheggaaa/pb v1.0.18 // indirect
+	github.com/creasty/defaults v1.5.1 // indirect
 	github.com/djherbis/times v1.2.0 // indirect
 	github.com/emirpasic/gods v1.12.0 // indirect
-	github.com/fr123k/pulumi-wireguard-aws v0.0.0-20210814123457-37c807cdbc72
+	github.com/fr123k/pulumi-wireguard-aws v0.0.0-20210815145243-788858775704
 	github.com/gofrs/flock v0.7.1 // indirect
+	github.com/gofrs/uuid v3.3.0+incompatible // indirect
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
 	github.com/golang/protobuf v1.5.0 // indirect
@@ -19,11 +21,9 @@ require (
 	github.com/opentracing/basictracer-go v1.0.0 // indirect
 	github.com/opentracing/opentracing-go v1.1.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/pulumi/pulumi-aws/sdk/v4 v4.14.0
-	github.com/pulumi/pulumi/sdk/v2 v2.25.2 // indirect
+	github.com/pulumi/pulumi-aws/sdk/v4 v4.15.0 // indirect
 	github.com/pulumi/pulumi/sdk/v3 v3.9.1
 	github.com/sabhiram/go-gitignore v0.0.0-20180611051255-d3107576ba94 // indirect
-	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/cobra v1.0.0 // indirect
 	github.com/src-d/gcfg v1.4.0 // indirect
@@ -35,8 +35,10 @@ require (
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e // indirect
 	golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1 // indirect
+	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
 	golang.org/x/text v0.3.6 // indirect
 	google.golang.org/grpc v1.29.1 // indirect
+	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/src-d/go-git.v4 v4.13.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.2.8 // indirect

@@ -5,6 +5,7 @@ github.com/blang/semver
 ## explicit
 github.com/cheggaaa/pb
 # github.com/creasty/defaults v1.5.1
+## explicit
 github.com/creasty/defaults
 # github.com/djherbis/times v1.2.0
 ## explicit
@@ -17,15 +18,20 @@ github.com/emirpasic/gods/lists/arraylist
 github.com/emirpasic/gods/trees
 github.com/emirpasic/gods/trees/binaryheap
 github.com/emirpasic/gods/utils
-# github.com/fr123k/pulumi-wireguard-aws v0.0.0-20210814123457-37c807cdbc72
+# github.com/fr123k/pulumi-wireguard-aws v0.0.0-20210815145243-788858775704
 ## explicit
+github.com/fr123k/pulumi-wireguard-aws/pkg/actors
+github.com/fr123k/pulumi-wireguard-aws/pkg/aws/compute
+github.com/fr123k/pulumi-wireguard-aws/pkg/aws/network
 github.com/fr123k/pulumi-wireguard-aws/pkg/model
+github.com/fr123k/pulumi-wireguard-aws/pkg/shared
 github.com/fr123k/pulumi-wireguard-aws/pkg/ssh
 github.com/fr123k/pulumi-wireguard-aws/pkg/utility
 # github.com/gofrs/flock v0.7.1
 ## explicit
 github.com/gofrs/flock
 # github.com/gofrs/uuid v3.3.0+incompatible
+## explicit
 github.com/gofrs/uuid
 # github.com/gogo/protobuf v1.3.1
 ## explicit
@@ -78,12 +84,10 @@ github.com/opentracing/opentracing-go/log
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
-# github.com/pulumi/pulumi-aws/sdk/v4 v4.14.0
+# github.com/pulumi/pulumi-aws/sdk/v4 v4.15.0
 ## explicit
 github.com/pulumi/pulumi-aws/sdk/v4/go/aws
 github.com/pulumi/pulumi-aws/sdk/v4/go/aws/ec2
-# github.com/pulumi/pulumi/sdk/v2 v2.25.2
-## explicit
 # github.com/pulumi/pulumi/sdk/v3 v3.9.1
 ## explicit
 github.com/pulumi/pulumi/sdk/v3/go/common/apitype
@@ -117,8 +121,6 @@ github.com/pulumi/pulumi/sdk/v3/python
 # github.com/sabhiram/go-gitignore v0.0.0-20180611051255-d3107576ba94
 ## explicit
 github.com/sabhiram/go-gitignore
-# github.com/satori/go.uuid v1.2.0
-## explicit
 # github.com/sergi/go-diff v1.1.0
 github.com/sergi/go-diff/diffmatchpatch
 # github.com/spf13/cast v1.3.1
@@ -207,6 +209,7 @@ golang.org/x/sys/unix
 golang.org/x/sys/windows
 golang.org/x/sys/windows/registry
 # golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
+## explicit
 golang.org/x/term
 # golang.org/x/text v0.3.6
 ## explicit
@@ -260,6 +263,7 @@ google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
 # google.golang.org/protobuf v1.27.1
+## explicit
 google.golang.org/protobuf/encoding/protojson
 google.golang.org/protobuf/encoding/prototext
 google.golang.org/protobuf/encoding/protowire
